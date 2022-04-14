@@ -4,6 +4,7 @@
             @loaded="onMapLoaded">
             <template v-if="mapLoaded">
                 <v-layer-mapbox-geojson
+                    layer-id="shootings"
                     source="/shootings.geojson"
                     :layer="layer"
                 ></v-layer-mapbox-geojson>
@@ -27,7 +28,16 @@
             <n-dropdown trigger="hover" :options="yearOptions" @select="key => year = key" size="small">
                 <n-button>{{ year }}</n-button>
             </n-dropdown>
-            <n-slider v-model="value" range :step="1" :min="1" :max="365" :default-value="[1, 31]" id="day_slider_input"/>
+            <n-slider id="day_slider_input"
+                range
+                v-model="value"
+                :format-tooltip="formatDateSliderTooltip"
+                :step="1"
+                :min="1"
+                :max="365"
+                :default-value="[1, 31]"
+                @update:value="setMapFilter"
+            />
         </div>
     </nav>
 </template>
@@ -62,7 +72,7 @@ export default {
                 zoom: 12,
             },
             mapLoaded: false,
-            value: null,
+            value: [1, 31],
             year: moment().year(),
         };
     },
@@ -152,6 +162,23 @@ export default {
         onMapLoaded(map) {
             window.$mapbox = map;
             this.mapLoaded = true;
+            map.once('sourcedata', this.onSourceDataEvent);
+        },
+        onSourceDataEvent() {
+            this.setMapFilter(this.value);
+        },
+        getDateFromDayOfYear: function (value) {
+            return moment.utc({year: this.year}).dayOfYear(value);
+        },
+        formatDateSliderTooltip(value) {
+            const date = this.getDateFromDayOfYear(value);
+            return date.format('MM/DD/YYYY');
+        },
+        setMapFilter(value) {
+            window.$mapbox.setFilter('shootings', ['all',
+                ['>=', ['get', 'date'], this.getDateFromDayOfYear(value[0]).unix() * 1000],
+                ['<=', ['get', 'date'], this.getDateFromDayOfYear(value[1]).unix() * 1000],
+            ]);
         },
     },
     components: {
