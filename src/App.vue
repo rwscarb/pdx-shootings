@@ -1,30 +1,56 @@
 <template>
-    <v-map :options="options"
-        @loaded="onMapLoaded">
-        <template v-if="mapLoaded">
-            <v-layer-mapbox-geojson
-                source="/shootings.geojson"
-                :layer="layer"
-            ></v-layer-mapbox-geojson>
-            <v-control-geolocate
-                :options="{
+    <main>
+        <v-map :options="options"
+            @loaded="onMapLoaded">
+            <template v-if="mapLoaded">
+                <v-layer-mapbox-geojson
+                    source="/shootings.geojson"
+                    :layer="layer"
+                ></v-layer-mapbox-geojson>
+                <v-control-geolocate
+                    :options="{
                     positionOptions: {
                       enableHighAccuracy: true,
                     },
                     trackUserLocation: true,
                     showUserHeading: true,
                 }"
-            />
-            <v-control-fullscreen/>
-            <v-control-navigation/>
-            <v-control-scale/>
-        </template>
-    </v-map>
+                />
+                <v-control-fullscreen/>
+                <v-control-navigation/>
+                <v-control-scale/>
+            </template>
+        </v-map>
+    </main>
+    <nav>
+        <div id="day_slider">
+            <n-dropdown trigger="hover" :options="yearOptions" @select="key => year = key" size="small">
+                <n-button>{{ year }}</n-button>
+            </n-dropdown>
+            <n-slider v-model="value" range :step="1" :min="1" :max="365" :default-value="[1, 31]" id="day_slider_input"/>
+        </div>
+    </nav>
 </template>
 
 <script>
 import 'mapbox-gl/dist/mapbox-gl.css'
-import { VMap, VMarker, VPopup, VControlNavigation, VControlGeolocate, VControlFullscreen, VControlScale, VLayerMapboxGeojson } from 'v-mapbox'
+import {
+    VMap,
+    VMarker,
+    VPopup,
+    VControlNavigation,
+    VControlGeolocate,
+    VControlFullscreen,
+    VControlScale,
+    VLayerMapboxGeojson,
+} from 'v-mapbox'
+import {
+    NSlider,
+    NDropdown,
+    NButton,
+} from 'naive-ui'
+import moment from 'moment'
+import _ from 'lodash'
 
 export default {
     data() {
@@ -36,9 +62,20 @@ export default {
                 zoom: 12,
             },
             mapLoaded: false,
+            value: null,
+            year: moment().year(),
         };
     },
     computed: {
+        yearOptions() {
+            return _.map(_.range(0, 4), x => {
+                const year = this.year - x;
+                return {
+                    label: year,
+                    key: year
+                };
+            });
+        },
         layer() {
             return {
                 type: 'circle',
@@ -126,6 +163,9 @@ export default {
         VMap,
         VMarker,
         VPopup,
+        NSlider,
+        NDropdown,
+        NButton,
     },
 };
 </script>
@@ -134,6 +174,29 @@ export default {
 body {
     margin: 0;
     padding: 0;
+}
+
+nav {
+    display: flex;
+    justify-content: space-around;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100vw;
+    height: 10%;
+    padding: 10px;
+}
+
+#day_slider {
+    width: 90%;
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: space-evenly;
+    align-items: center;
+}
+
+#day_slider_input {
+    width: 90%;
 }
 
 #app, #map {

@@ -16,7 +16,7 @@ if response.ok:
         incident = {
             'block_address': row['Block Address'],
             'id': row['Incident Number'],
-            'date': datetime.datetime.strptime(row['Occurence Date'], '%m/%d/%Y').strftime('%Y-%m-%d'),
+            'date': datetime.datetime.strptime(row['Occurence Date'], '%m/%d/%Y').timestamp() * 1000,
             'injury': row['Person Injury'].strip().lower() == 'true',
             'precinct': row['Precinct'],
             'casings': int(row['CasingsRecovered']),
