@@ -68,7 +68,7 @@ export default {
     watch: {
         showHeatMap(newVal) {
             const visibility = newVal ? 'visible' : 'none';
-            window.$mapbox.setLayoutProperty(layers[1].id, 'visibility', visibility);
+            window.$mapbox.setLayoutProperty('shootings-heatmap', 'visibility', visibility);
         },
     },
     methods: {
