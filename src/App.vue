@@ -3,22 +3,33 @@
         <div id="map"></div>
     </main>
     <nav>
-        <n-switch v-model:value="showHeatMap"/>
-        <div id="day_slider">
-            <n-dropdown trigger="hover" :options="yearOptions" @select="setYear" size="small">
-                <n-button>{{ year }}</n-button>
-            </n-dropdown>
-            <n-slider id="day_slider_input"
-                range
-                v-model="value"
-                :format-tooltip="formatDateSliderTooltip"
-                :step="1"
-                :min="1"
-                :max="365"
-                :default-value="[1, 31]"
-                @update:value="setMapFilter"
-            />
-        </div>
+        <n-card size="small" class="layer_control_card">
+            <div>
+                <n-switch v-model:value="showHeatMap" id="show_heatmap_switch"/>
+                <div class="control_label">
+                    <label for="show_heatmap_switch">Heatmap</label>
+                </div>
+            </div>
+            <div>
+                <n-dropdown trigger="hover" :options="yearOptions" @select="setYear" size="medium" id="select_year_dropdown">
+                    <n-button>{{ year }}</n-button>
+                </n-dropdown>
+                <div class="control_label">
+                    <label for="select_year_dropdown">Year</label>
+                </div>
+            </div>
+        </n-card>
+        <n-slider id="day_slider_input"
+            range
+            show-tooltip
+            v-model="value"
+            :format-tooltip="formatDateSliderTooltip"
+            :step="1"
+            :min="1"
+            :max="365"
+            :default-value="[1, 31]"
+            @update:value="setMapFilter"
+        />
     </nav>
 </template>
 
@@ -31,7 +42,8 @@ import {
     NDropdown,
     NButton,
     NSwitch,
-} from 'naive-ui'
+    NCard,
+} from 'naive-ui';
 import mapboxgl from 'mapbox-gl'
 import { layers } from './constants'
 
@@ -110,6 +122,7 @@ export default {
         NDropdown,
         NButton,
         NSwitch,
+        NCard,
     },
 };
 </script>
@@ -132,16 +145,21 @@ nav {
     padding: 10px;
 }
 
-#day_slider {
-    width: 90%;
-    display: flex;
-    flex-flow: row nowrap;
-    justify-content: space-evenly;
-    align-items: center;
+#day_slider_input {
+    margin: 0 20px;
 }
 
-#day_slider_input {
-    width: 90%;
+.layer_control_card {
+    max-width: 300px;
+    justify-content: space-evenly;
+    .control_label {
+        text-align: center;
+    }
+    .n-card__content {
+        display: flex;
+        justify-content: space-evenly;
+        align-items: center;
+    }
 }
 
 #app, #map {
