@@ -1,31 +1,11 @@
 <template>
     <main>
-        <v-map :options="options"
-            @loaded="onMapLoaded">
-            <template v-if="mapLoaded">
-                <v-layer-mapbox-geojson
-                    layer-id="shootings"
-                    source="/shootings.geojson"
-                    :layer="layer"
-                ></v-layer-mapbox-geojson>
-                <v-control-geolocate
-                    :options="{
-                    positionOptions: {
-                      enableHighAccuracy: true,
-                    },
-                    trackUserLocation: true,
-                    showUserHeading: true,
-                }"
-                />
-                <v-control-fullscreen/>
-                <v-control-navigation/>
-                <v-control-scale/>
-            </template>
-        </v-map>
+        <div id="map"></div>
     </main>
     <nav>
+        <n-switch v-model:value="showHeatMap"/>
         <div id="day_slider">
-            <n-dropdown trigger="hover" :options="yearOptions" @select="key => year = key" size="small">
+            <n-dropdown trigger="hover" :options="yearOptions" @select="setYear" size="small">
                 <n-button>{{ year }}</n-button>
             </n-dropdown>
             <n-slider id="day_slider_input"
@@ -44,127 +24,45 @@
 
 <script>
 import 'mapbox-gl/dist/mapbox-gl.css'
-import {
-    VMap,
-    VMarker,
-    VPopup,
-    VControlNavigation,
-    VControlGeolocate,
-    VControlFullscreen,
-    VControlScale,
-    VLayerMapboxGeojson,
-} from 'v-mapbox'
+import _ from 'lodash'
+import moment from 'moment'
 import {
     NSlider,
     NDropdown,
     NButton,
+    NSwitch,
 } from 'naive-ui'
-import moment from 'moment'
-import _ from 'lodash'
+import mapboxgl from 'mapbox-gl'
+import { layers } from './constants'
 
 export default {
     data() {
         return {
-            options: {
-                accessToken: 'pk.eyJ1IjoicnNjYXJiZXJ5IiwiYSI6ImNqbGd6Z3QyZjB0anQzcHAxdGZjMmQwMWEifQ.qoyVSKPnqnoS1_t9UIzlDQ',
-                style: 'mapbox://styles/mapbox/dark-v10',
-                center: {lng: -122.67598626624789, lat: 45.51939452327494},
-                zoom: 12,
-            },
             mapLoaded: false,
             value: [1, 31],
-            year: moment().year(),
+            year: null,
+            yearOptions: [],
+            showHeatMap: false,
         };
     },
-    computed: {
-        yearOptions() {
-            return _.map(_.range(0, 4), x => {
-                const year = this.year - x;
-                return {
-                    label: year,
-                    key: year
-                };
-            });
+    watch: {
+        showHeatMap(newVal) {
+            const visibility = newVal ? 'visible' : 'none';
+            window.$mapbox.setLayoutProperty(layers[1].id, 'visibility', visibility);
         },
-        layer() {
-            return {
-                type: 'circle',
-                paint: {
-                    'circle-radius': 3,
-                    'circle-color': '#1F70D3'
-                }
-            }
-        },
-        layers() {
-            return {
-                circleLayer: {
-                    id: 'shootings',
-                    type: 'heatmap',
-                    source: 'shootings',
-                    paint: {
-                        // increase weight as diameter breast height increases
-                        'heatmap-weight': [
-                            'interpolate',
-                            ['linear'],
-                            ['get', 'point_count'],
-                            0,
-                            0,
-                            6,
-                            1,
-                        ],
-                        // increase intensity as zoom level increases
-                        'heatmap-intensity': {
-                            stops: [
-                                [11, 1],
-                                [15, 3],
-                            ],
-                        },
-                        // assign color values be applied to points depending on their density
-                        'heatmap-color': [
-                            'interpolate',
-                            ['linear'],
-                            ['heatmap-density'],
-                            0,
-                            'rgba(236,222,239,0)',
-                            0.2,
-                            'rgb(208,209,230)',
-                            0.4,
-                            'rgb(166,189,219)',
-                            0.6,
-                            'rgb(103,169,207)',
-                            0.8,
-                            'rgb(28,144,153)',
-                        ],
-                        // increase radius as zoom increases
-                        'heatmap-radius': {
-                            stops: [
-                                [11, 15],
-                                [15, 20],
-                            ],
-                        },
-                        // decrease opacity to transition into the circle layer
-                        'heatmap-opacity': {
-                            default: 1,
-                            stops: [
-                                [14, 1],
-                                [15, 0],
-                            ],
-                        },
-                    },
-                    layout: {
-                        visibility: 'visible',
-                    },
-                }
-            }
-        }
     },
     methods: {
-        onMapLoaded(map) {
-            window.$mapbox = map;
+        async onMapLoaded() {
+            await window.$mapbox.addSource('shootings', {
+                type: 'geojson',
+                data: '/shootings.geojson'
+            });
+            await Promise.all(_.map(layers, layer => window.$mapbox.addLayer(layer)));
+            await window.$mapbox.once('sourcedata', () => this.setMapFilter(this.value));
             this.mapLoaded = true;
-            map.once('sourcedata', this.onSourceDataEvent);
         },
-        onSourceDataEvent() {
+        setYear(year) {
+            this.year = year;
             this.setMapFilter(this.value);
         },
         getDateFromDayOfYear: function (value) {
@@ -175,24 +73,43 @@ export default {
             return date.format('MM/DD/YYYY');
         },
         setMapFilter(value) {
-            window.$mapbox.setFilter('shootings', ['all',
-                ['>=', ['get', 'date'], this.getDateFromDayOfYear(value[0]).unix() * 1000],
-                ['<=', ['get', 'date'], this.getDateFromDayOfYear(value[1]).unix() * 1000],
-            ]);
+            let msMin = this.getDateFromDayOfYear(value[0]).unix() * 1000;
+            let msMax = this.getDateFromDayOfYear(value[1]).unix() * 1000;
+            _.forEach(layers, layer => {
+                window.$mapbox.setFilter(layer.id, ['all',
+                    ['>=', ['get', 'date'], msMin],
+                    ['<=', ['get', 'date'], msMax],
+                ]);
+            });
+            this.value = value;
         },
     },
+    mounted() {
+        mapboxgl.accessToken = 'pk.eyJ1IjoicnNjYXJiZXJ5IiwiYSI6ImNqbGd6Z3QyZjB0anQzcHAxdGZjMmQwMWEifQ.qoyVSKPnqnoS1_t9UIzlDQ';
+
+        window.$mapbox = new mapboxgl.Map({
+            container: 'map',
+            style: 'mapbox://styles/mapbox/dark-v10',
+            center: [-122.67598626624789, 45.51939452327494],
+            zoom: 12
+        });
+
+        window.$mapbox.on('load', this.onMapLoaded);
+
+        this.year = moment().year();
+        this.yearOptions = _.map(_.range(0, 4), x => {
+            const year = this.year - x;
+            return {
+                label: year,
+                key: year
+            };
+        });
+    },
     components: {
-        VLayerMapboxGeojson,
-        VControlNavigation,
-        VControlGeolocate,
-        VControlFullscreen,
-        VControlScale,
-        VMap,
-        VMarker,
-        VPopup,
         NSlider,
         NDropdown,
         NButton,
+        NSwitch,
     },
 };
 </script>
@@ -206,6 +123,7 @@ body {
 nav {
     display: flex;
     justify-content: space-around;
+    align-items: center;
     position: fixed;
     bottom: 0;
     left: 0;
