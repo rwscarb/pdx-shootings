@@ -10,19 +10,19 @@
                     <label for="show_heatmap_switch">Heatmap</label>
                 </div>
             </div>
+            <n-divider vertical />
             <div>
                 <n-dropdown trigger="hover"
                     :options="yearOptions"
                     @select="setYear"
-                    size="medium"
+                    size="large"
                     id="select_year_dropdown">
                     <n-button>{{ year }}</n-button>
                 </n-dropdown>
-                <div class="control_label">
-                    <label for="select_year_dropdown">Year</label>
-                </div>
             </div>
         </n-card>
+    </nav>
+    <footer>
         <n-slider id="day_slider_input"
             range
             v-model="value"
@@ -33,22 +33,26 @@
             :default-value="[1, 31]"
             @update:value="setMapFilter"
         />
-    </nav>
+    </footer>
 </template>
 
 <script>
-import 'mapbox-gl/dist/mapbox-gl.css';
-import _ from 'lodash';
-import moment from 'moment';
+import 'mapbox-gl/dist/mapbox-gl.css'
+import _ from 'lodash'
+import { createApp } from 'vue'
+import moment from 'moment'
 import {
     NSlider,
     NDropdown,
     NButton,
     NSwitch,
     NCard,
-} from 'naive-ui';
-import mapboxgl from 'mapbox-gl';
-import { layers } from './constants';
+    NDivider,
+} from 'naive-ui'
+import mapboxgl from 'mapbox-gl'
+import { layers } from './constants'
+import Popup from './components/Popup.vue'
+
 
 export default {
     data() {
@@ -58,6 +62,7 @@ export default {
             year: null,
             yearOptions: [],
             showHeatMap: false,
+            items: [],
         };
     },
     watch: {
@@ -108,37 +113,43 @@ export default {
             center: [-122.67598626624789, 45.51939452327494],
             zoom: 12,
         });
+        window.$mapbox.addControl(new mapboxgl.NavigationControl(), 'top-left');
+        window.$mapbox.addControl(new mapboxgl.FullscreenControl(), 'top-left');
 
         window.$mapbox.on('load', this.onMapLoaded);
 
-        const popup = new mapboxgl.Popup({
-            closeButton: false,
-            closeOnClick: false,
-        });
-
-        window.$mapbox.on('mouseenter', 'shootings-circles', e => {
-            window.$mapbox.getCanvas().style.cursor = 'pointer';
-
+        window.$mapbox.on('click', 'shootings-circles', e => {
             const feature = e.features[0];
             const coordinates = feature.geometry.coordinates.slice();
-            const description = feature.properties.block_address;
 
             /*
-            Ensure that if the map is zoomed out such that multiple
-            copies of the feature are visible, the popup appears
-            over the copy being pointed to.
+              Ensure that if the map is zoomed out such that multiple
+              copies of the feature are visible, the popup appears
+              over the copy being pointed to.
             */
             while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
                 coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
             }
 
-            popup.setLngLat(coordinates).setHTML(description).addTo(window.$mapbox);
+            this.popupVueInstance.setItems(_.map(e.features, 'properties'));
+            window.$popup.setLngLat(coordinates).addTo(window.$mapbox);
+        });
+
+        window.$mapbox.on('mouseenter', 'shootings-circles', e => {
+            window.$mapbox.getCanvas().style.cursor = 'pointer';
         });
 
         window.$mapbox.on('mouseleave', 'shootings-circles', () => {
             window.$mapbox.getCanvas().style.cursor = '';
-            popup.remove();
         });
+
+
+        window.$popup = new mapboxgl.Popup()
+            .setLngLat([0, 0])
+            .setHTML('<div id="popup"></div>')
+            .addTo(window.$mapbox);
+
+        this.popupVueInstance = createApp(Popup).mount('#popup')
 
         this.year = moment().year();
         this.yearOptions = _.map(_.range(0, 4), x => {
@@ -149,12 +160,16 @@ export default {
             };
         });
     },
+    created() {
+        this.popupVueInstance = null;
+    },
     components: {
         NSlider,
         NDropdown,
         NButton,
         NSwitch,
         NCard,
+        NDivider,
     },
 };
 </script>
@@ -170,15 +185,25 @@ nav {
     justify-content: space-around;
     align-items: center;
     position: fixed;
+    right: 0;
+    top: 0;
+}
+
+footer {
+    display: flex;
+    position: fixed;
     bottom: 0;
     left: 0;
     width: 100vw;
     height: 10%;
-    padding: 10px;
 }
 
 #day_slider_input {
     margin: 0 20px;
+}
+
+#select_year_dropdown {
+    border-radius: 8px;
 }
 
 .layer_control_card {
@@ -187,6 +212,7 @@ nav {
 
     .control_label {
         text-align: center;
+        font-size: 0.9em;
     }
 
     .n-card__content {
@@ -194,6 +220,10 @@ nav {
         justify-content: space-evenly;
         align-items: center;
     }
+}
+
+.n-card {
+    background-color: rgba(255, 255, 255, .85);
 }
 
 #app, #map {

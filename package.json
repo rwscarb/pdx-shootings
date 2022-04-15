@@ -11,6 +11,8 @@
   },
   "devDependencies": {
     "@types/mapbox-gl": "^2.7.0",
+    "@vicons/material": "^0.12.0",
+    "@vicons/utils": "^0.1.4",
     "@vitejs/plugin-vue": "^2.3.1",
     "less": "^4.1.2",
     "lodash": "^4.17.21",
