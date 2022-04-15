@@ -78,7 +78,7 @@ export const circleLayerHover = {
         visibility: 'visible'
     },
     paint: {
-        'circle-radius': 6,
+        'circle-radius': 10,
         'circle-opacity': 0
     }
 };
