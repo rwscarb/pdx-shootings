@@ -13,6 +13,7 @@ if response.ok:
     dr = csv.DictReader(response.content.decode('utf-8').splitlines())
     features = []
     for row in dr:
+        coordinates = [float(row['Open Data Longitude']), float(row['Open Data Latitude'])]
         incident = {
             'block_address': row['Block Address'],
             'id': row['Incident Number'],
@@ -20,8 +21,8 @@ if response.ok:
             'injury': row['Person Injury'].strip().lower() == 'true',
             'precinct': row['Precinct'],
             'casings': int(row['CasingsRecovered']),
+            'location': coordinates,
         }
-        coordinates = [float(row['Open Data Longitude']), float(row['Open Data Latitude'])]
         if any(coordinates):
             features.append({
                 'type': 'Feature',
@@ -34,4 +35,4 @@ if response.ok:
     json.dump({
         'type': 'FeatureCollection',
         'features': features,
-    }, open('../public/shootings.geojson', 'w'))
+    }, open('./public/shootings.geojson', 'w'))
