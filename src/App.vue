@@ -118,7 +118,7 @@ export default {
 
         window.$mapbox.on('load', this.onMapLoaded);
 
-        window.$mapbox.on('click', 'shootings-circles', e => {
+        window.$mapbox.on('click', 'shootings-circles-hover', e => {
             const feature = e.features[0];
             const coordinates = feature.geometry.coordinates.slice();
 
@@ -135,11 +135,11 @@ export default {
             window.$popup.setLngLat(coordinates).addTo(window.$mapbox);
         });
 
-        window.$mapbox.on('mouseenter', 'shootings-circles', e => {
+        window.$mapbox.on('mouseenter', 'shootings-circles-hover', e => {
             window.$mapbox.getCanvas().style.cursor = 'pointer';
         });
 
-        window.$mapbox.on('mouseleave', 'shootings-circles', () => {
+        window.$mapbox.on('mouseleave', 'shootings-circles-hover', () => {
             window.$mapbox.getCanvas().style.cursor = '';
         });
 

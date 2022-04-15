@@ -70,4 +70,17 @@ export const circleLayer = {
     }
 };
 
-export const layers = [circleLayer, heatmapLayer];
+export const circleLayerHover = {
+    id: 'shootings-circles-hover',
+    type: 'circle',
+    source: 'shootings',
+    layout: {
+        visibility: 'visible'
+    },
+    paint: {
+        'circle-radius': 6,
+        'circle-opacity': 0
+    }
+};
+
+export const layers = [circleLayer, circleLayerHover, heatmapLayer];
