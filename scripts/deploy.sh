@@ -6,7 +6,7 @@ npm run build
 
 cd dist
 
-echo 'pdx-shootings.com' > CNAME
+echo 'map.pdx-shootings.com' > CNAME
 
 git init
 git checkout -b master

@@ -11,7 +11,11 @@
                 </div>
             </div>
             <div>
-                <n-dropdown trigger="hover" :options="yearOptions" @select="setYear" size="medium" id="select_year_dropdown">
+                <n-dropdown trigger="hover"
+                    :options="yearOptions"
+                    @select="setYear"
+                    size="medium"
+                    id="select_year_dropdown">
                     <n-button>{{ year }}</n-button>
                 </n-dropdown>
                 <div class="control_label">
@@ -21,7 +25,6 @@
         </n-card>
         <n-slider id="day_slider_input"
             range
-            show-tooltip
             v-model="value"
             :format-tooltip="formatDateSliderTooltip"
             :step="1"
@@ -34,9 +37,9 @@
 </template>
 
 <script>
-import 'mapbox-gl/dist/mapbox-gl.css'
-import _ from 'lodash'
-import moment from 'moment'
+import 'mapbox-gl/dist/mapbox-gl.css';
+import _ from 'lodash';
+import moment from 'moment';
 import {
     NSlider,
     NDropdown,
@@ -44,8 +47,8 @@ import {
     NSwitch,
     NCard,
 } from 'naive-ui';
-import mapboxgl from 'mapbox-gl'
-import { layers } from './constants'
+import mapboxgl from 'mapbox-gl';
+import { layers } from './constants';
 
 export default {
     data() {
@@ -67,7 +70,7 @@ export default {
         async onMapLoaded() {
             await window.$mapbox.addSource('shootings', {
                 type: 'geojson',
-                data: '/shootings.geojson'
+                data: '/shootings.geojson',
             });
             await Promise.all(_.map(layers, layer => window.$mapbox.addLayer(layer)));
             await window.$mapbox.once('sourcedata', () => this.setMapFilter(this.value));
@@ -103,17 +106,46 @@ export default {
             container: 'map',
             style: 'mapbox://styles/mapbox/dark-v10',
             center: [-122.67598626624789, 45.51939452327494],
-            zoom: 12
+            zoom: 12,
         });
 
         window.$mapbox.on('load', this.onMapLoaded);
+
+        const popup = new mapboxgl.Popup({
+            closeButton: false,
+            closeOnClick: false,
+        });
+
+        window.$mapbox.on('mouseenter', 'shootings-circles', e => {
+            window.$mapbox.getCanvas().style.cursor = 'pointer';
+
+            const feature = e.features[0];
+            const coordinates = feature.geometry.coordinates.slice();
+            const description = feature.properties.block_address;
+
+            /*
+            Ensure that if the map is zoomed out such that multiple
+            copies of the feature are visible, the popup appears
+            over the copy being pointed to.
+            */
+            while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
+                coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+            }
+
+            popup.setLngLat(coordinates).setHTML(description).addTo(window.$mapbox);
+        });
+
+        window.$mapbox.on('mouseleave', 'shootings-circles', () => {
+            window.$mapbox.getCanvas().style.cursor = '';
+            popup.remove();
+        });
 
         this.year = moment().year();
         this.yearOptions = _.map(_.range(0, 4), x => {
             const year = this.year - x;
             return {
                 label: year,
-                key: year
+                key: year,
             };
         });
     },
@@ -152,9 +184,11 @@ nav {
 .layer_control_card {
     max-width: 300px;
     justify-content: space-evenly;
+
     .control_label {
         text-align: center;
     }
+
     .n-card__content {
         display: flex;
         justify-content: space-evenly;
