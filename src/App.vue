@@ -199,7 +199,7 @@ footer {
 }
 
 #day_slider_input {
-    margin: 0 20px;
+    margin: 0 5em;
 }
 
 #select_year_dropdown {
