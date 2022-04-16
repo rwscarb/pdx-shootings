@@ -1,5 +1,7 @@
 <template>
-    <main>
+    <main
+        @keyup.up.ctrl="incrementYear"
+        @keyup.down.ctrl="decrementYear">
         <div id="map"></div>
     </main>
     <nav>
@@ -13,10 +15,10 @@
             <n-divider vertical/>
             <div>
                 <n-dropdown trigger="hover"
-                            :options="yearOptions"
-                            @select="setYear"
-                            size="large"
-                            id="select_year_dropdown">
+                    :options="yearOptions"
+                    @select="setYear"
+                    size="large"
+                    id="select_year_dropdown">
                     <n-button>{{ year }}</n-button>
                 </n-dropdown>
             </div>
@@ -24,23 +26,23 @@
     </nav>
     <footer>
         <n-slider id="day_slider_input"
-                  range
-                  v-model="value"
-                  :format-tooltip="formatDateSliderTooltip"
-                  :step="1"
-                  :min="1"
-                  :max="365"
-                  :default-value="[1, 31]"
-                  @update:value="setMapFilter"
+            range
+            v-model="value"
+            :format-tooltip="formatDateSliderTooltip"
+            :step="1"
+            :min="1"
+            :max="365"
+            :default-value="[1, 31]"
+            @update:value="setMapFilter"
         />
     </footer>
 </template>
 
 <script>
-import 'mapbox-gl/dist/mapbox-gl.css'
-import _ from 'lodash'
-import { createApp } from 'vue'
-import moment from 'moment'
+import 'mapbox-gl/dist/mapbox-gl.css';
+import _ from 'lodash';
+import { createApp } from 'vue';
+import moment from 'moment';
 import {
     NSlider,
     NDropdown,
@@ -48,11 +50,11 @@ import {
     NSwitch,
     NCard,
     NDivider,
-} from 'naive-ui'
-import mapboxgl from 'mapbox-gl'
-import { barrelCoords, layers } from './constants'
-import Popup from './components/Popup.vue'
-import barrelImgUrl from './assets/street-barrel.png'
+} from 'naive-ui';
+import mapboxgl from 'mapbox-gl';
+import { barrelCoords, barrelLayer, filterableLayers } from './constants';
+import Popup from './components/Popup.vue';
+import barrelImgUrl from './assets/street-barrel.png';
 
 
 export default {
@@ -72,14 +74,59 @@ export default {
             window.$mapbox.setLayoutProperty('shootings-heatmap', 'visibility', visibility);
         },
     },
+    computed: {
+        availableYears() {
+            return _.map(this.yearOptions, 'key');
+        },
+        maxYear() {
+            return _.first(this.availableYears);
+        },
+        minYear() {
+            return _.last(this.availableYears);
+        },
+    },
     methods: {
+        incrementYear() {
+            if (this.year < this.maxYear) {
+                this.setYear(this.year + 1);
+            }
+        },
+        decrementYear() {
+            if (this.year > this.minYear) {
+                this.setYear(this.year - 1);
+            }
+        },
         async onMapLoaded() {
             await window.$mapbox.addSource('shootings', {
                 type: 'geojson',
                 data: '/shootings.geojson',
             });
-            await Promise.all(_.map(layers, layer => window.$mapbox.addLayer(layer)));
+            await Promise.all(_.map(filterableLayers, layer => window.$mapbox.addLayer(layer)));
             await window.$mapbox.once('sourcedata', () => this.setMapFilter(this.value));
+            window.$mapbox.loadImage(
+                barrelImgUrl,
+                (error, image) => {
+                    if (error) throw error;
+
+                    window.$mapbox.addImage('barrel', image);
+
+                    window.$mapbox.addSource('barrels', {
+                        'type': 'geojson',
+                        'data': {
+                            'type': 'FeatureCollection',
+                            'features': _.map(barrelCoords, x => ({
+                                'type': 'Feature',
+                                'geometry': {
+                                    'type': 'Point',
+                                    'coordinates': x,
+                                },
+                            })),
+                        },
+                    });
+
+                    window.$mapbox.addLayer(barrelLayer);
+                },
+            );
             this.mapLoaded = true;
         },
         setYear(year) {
@@ -96,7 +143,7 @@ export default {
         setMapFilter(value) {
             let msMin = this.getDateFromDayOfYear(value[0]).unix() * 1000;
             let msMax = this.getDateFromDayOfYear(value[1]).unix() * 1000;
-            _.forEach(layers, layer => {
+            _.forEach(filterableLayers, layer => {
                 window.$mapbox.setFilter(layer.id, ['all',
                     ['>=', ['get', 'date'], msMin],
                     ['<=', ['get', 'date'], msMax],
@@ -144,58 +191,14 @@ export default {
             window.$mapbox.getCanvas().style.cursor = '';
         });
 
-        window.$mapbox.loadImage(
-            barrelImgUrl,
-            (error, image) => {
-                if (error) throw error;
-
-                window.$mapbox.addImage('barrel', image);
-
-                window.$mapbox.addSource('barrels', {
-                    'type': 'geojson',
-                    'data': {
-                        'type': 'FeatureCollection',
-                        'features': _.map(barrelCoords, x => ({
-                            'type': 'Feature',
-                            'geometry': {
-                                'type': 'Point',
-                                'coordinates': x,
-                            }
-                        }))
-                    }
-                });
-
-                window.$mapbox.addLayer({
-                    'id': 'barrels',
-                    'type': 'symbol',
-                    'source': 'barrels',
-                    'layout': {
-                        'icon-image': 'barrel',
-                        'icon-size': [
-                            'interpolate',
-                            ['exponential', 0.5],
-                            ['zoom'],
-                            12,
-                            0.1,
-                            15,
-                            0.2,
-                            18,
-                            0.3
-                        ]
-                    }
-                });
-            }
-        );
-
-
         window.$popup = new mapboxgl.Popup()
             .setLngLat([0, 0])
             .setHTML('<div id="popup"></div>')
             .addTo(window.$mapbox);
 
-        this.popupVueInstance = createApp(Popup).mount('#popup')
+        this.popupVueInstance = createApp(Popup).mount('#popup');
 
-        this.year = moment().year() - 1;
+        this.year = moment().year();
         this.yearOptions = _.map(_.range(0, 4), x => {
             const year = this.year - x;
             return {
@@ -203,6 +206,7 @@ export default {
                 key: year,
             };
         });
+        this.year--;
     },
     created() {
         this.popupVueInstance = null;
@@ -220,62 +224,62 @@ export default {
 
 <style lang="less">
 body {
-  margin: 0;
-  padding: 0;
+    margin: 0;
+    padding: 0;
 }
 
 nav {
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-  position: fixed;
-  right: 0;
-  top: 0;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    position: fixed;
+    right: 0;
+    top: 0;
 }
 
 footer {
-  display: flex;
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  width: 100vw;
-  height: 10%;
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100vw;
+    height: 10%;
 }
 
 #day_slider_input {
-  margin: 0 5em;
+    margin: 0 5em;
 }
 
 #select_year_dropdown {
-  border-radius: 8px;
+    border-radius: 8px;
 }
 
 .n-button {
-  border: solid 1px #CFCFCF;
+    border: solid 1px #CFCFCF;
 }
 
 .layer_control_card {
-  max-width: 300px;
-  justify-content: space-evenly;
-
-  .control_label {
-    text-align: center;
-    font-size: 0.9em;
-  }
-
-  .n-card__content {
-    display: flex;
+    max-width: 300px;
     justify-content: space-evenly;
-    align-items: center;
-  }
+
+    .control_label {
+        text-align: center;
+        font-size: 0.9em;
+    }
+
+    .n-card__content {
+        display: flex;
+        justify-content: space-evenly;
+        align-items: center;
+    }
 }
 
 .n-card {
-  background-color: rgba(255, 255, 255, .85);
+    background-color: rgba(255, 255, 255, .85);
 }
 
 #app, #map {
-  width: 100vw;
-  height: 100vh;
+    width: 100vw;
+    height: 100vh;
 }
 </style>

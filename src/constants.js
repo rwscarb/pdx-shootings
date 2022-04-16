@@ -83,7 +83,28 @@ export const circleLayerHover = {
     }
 };
 
-export const layers = [circleLayer, circleLayerHover, heatmapLayer];
+export const barrelLayer = {
+    'id': 'barrels',
+    'type': 'symbol',
+    'source': 'barrels',
+    'layout': {
+        'icon-image': 'barrel',
+        'icon-size': [
+            'interpolate',
+            ['exponential', 0.5],
+            ['zoom'],
+            12,
+            0.1,
+            15,
+            0.2,
+            18,
+            0.3
+        ]
+    }
+};
+
+export const filterableLayers = [circleLayer, circleLayerHover, heatmapLayer];
+export const nonFilterableLayers = [barrelLayer];
 
 // todo: get real coords
 export const barrelCoords = [
@@ -92,3 +113,4 @@ export const barrelCoords = [
     [-122.5900075, 45.482968],
     [-122.587996, 45.483066],
 ];
+
