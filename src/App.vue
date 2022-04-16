@@ -4,7 +4,7 @@
         <div id="map"></div>
     </main>
     <nav>
-        <n-space id="top_right_tools" align="center">
+        <n-space id="top_right_tools" align="center" justify="end">
             <div>Heatmap</div>
             <n-switch v-model:value="showHeatMap"/>
             <n-divider vertical/>
@@ -19,7 +19,7 @@
                 </n-dropdown>
             </div>
             <n-divider vertical/>
-            <div style="width: 225px">
+            <div style="width: 16em">
                 Displaying: {{ startFilterDate.format('MMM Do') }}
                 to {{ endFilterDate.format('MMM Do') }}
             </div>
@@ -278,6 +278,6 @@ footer {
 
 #top_right_tools {
   background-color: white;
-  padding: 5px 10px;
+  padding: 5px 0 5px 10px;
 }
 </style>
