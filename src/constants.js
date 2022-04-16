@@ -85,6 +85,7 @@ export const circleLayerHover = {
 
 export const layers = [circleLayer, circleLayerHover, heatmapLayer];
 
+// todo: get real coords
 export const barrelCoords = [
     [-122.589353, 45.480296],
     [-122.586710, 45.480319],

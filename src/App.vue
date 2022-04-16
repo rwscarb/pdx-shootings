@@ -52,6 +52,7 @@ import {
 import mapboxgl from 'mapbox-gl'
 import { barrelCoords, layers } from './constants'
 import Popup from './components/Popup.vue'
+import barrelImgUrl from './assets/street-barrel.png'
 
 
 export default {
@@ -144,7 +145,7 @@ export default {
         });
 
         window.$mapbox.loadImage(
-            '/street-barrel.png',
+            barrelImgUrl,
             (error, image) => {
                 if (error) throw error;
 
@@ -194,7 +195,7 @@ export default {
 
         this.popupVueInstance = createApp(Popup).mount('#popup')
 
-        this.year = moment().year();
+        this.year = moment().year() - 1;
         this.yearOptions = _.map(_.range(0, 4), x => {
             const year = this.year - x;
             return {
