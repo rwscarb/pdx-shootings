@@ -1,19 +1,27 @@
 <template>
     <div class="vue_popup">
-        <n-statistic label="Casings Recovered:">
-            <n-number-animation
-                    :from="0"
-                    :to="totalCasings"
-                    :duration="2000"/>
-        </n-statistic>
-        <Icon v-if="hasInjury">
-            <PersonalInjuryRound/>
-        </Icon>
+        <n-badge>
+            <template #value>
+                <Icon v-if="hasInjury">
+                    <PersonalInjuryRound/>
+                </Icon>
+            </template>
+            <n-statistic label="Casings Recovered">
+                <n-number-animation
+                        :from="0"
+                        :to="totalCasings"
+                        :duration="2000"/>
+            </n-statistic>
+        </n-badge>
         <n-divider></n-divider>
         <n-collapse>
             <n-collapse-item v-for="item in uniqueItems">
                 <template #header>
-                    {{ getDateString(item.date) }} Casings: {{ item.casings }}
+                    {{ getDateString(item.date) }}
+                    <span style="margin: 0 10px">Casings: {{ item.casings }}</span>
+                    <Icon v-if="item.injury">
+                        <PersonalInjuryRound/>
+                    </Icon>
                 </template>
                 <n-table class="incident_table">
                     <tbody>
@@ -53,7 +61,7 @@
 import _ from 'lodash'
 import moment from 'moment'
 
-import { NStatistic, NNumberAnimation, NCollapse, NCollapseItem, NTable, NDivider } from 'naive-ui'
+import { NStatistic, NNumberAnimation, NCollapse, NCollapseItem, NTable, NDivider, NBadge } from 'naive-ui'
 import { Icon } from '@vicons/utils'
 import { PersonalInjuryRound } from '@vicons/material'
 
@@ -95,6 +103,7 @@ export default {
         NCollapseItem,
         NTable,
         NDivider,
+        NBadge,
     },
 };
 </script>
@@ -105,6 +114,7 @@ export default {
   min-width: 217px;
   overflow-y: auto;
   padding-right: 13px;
+  padding-top: 10px;
 }
 
 .incident_table {

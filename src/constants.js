@@ -84,3 +84,10 @@ export const circleLayerHover = {
 };
 
 export const layers = [circleLayer, circleLayerHover, heatmapLayer];
+
+export const barrelCoords = [
+    [-122.589353, 45.480296],
+    [-122.586710, 45.480319],
+    [-122.5900075, 45.482968],
+    [-122.587996, 45.483066],
+];
