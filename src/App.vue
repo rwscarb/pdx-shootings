@@ -1,7 +1,6 @@
 <template>
-    <main
-        @keyup.up.ctrl="incrementYear"
-        @keyup.down.ctrl="decrementYear">
+    <main @keyup.up.ctrl="incrementYear"
+          @keyup.down.ctrl="decrementYear">
         <div id="map"></div>
     </main>
     <nav>
@@ -194,9 +193,11 @@ export default {
         window.$popup = new mapboxgl.Popup()
             .setLngLat([0, 0])
             .setHTML('<div id="popup"></div>')
-            .addTo(window.$mapbox);
+            .addTo(window.$mapbox)
 
         this.popupVueInstance = createApp(Popup).mount('#popup');
+
+        window.$popup.remove();
 
         this.year = moment().year();
         this.yearOptions = _.map(_.range(0, 4), x => {

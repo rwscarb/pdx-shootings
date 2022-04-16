@@ -14,7 +14,7 @@
             </n-statistic>
         </n-badge>
         <n-divider></n-divider>
-        <n-collapse>
+        <n-collapse v-if="!loading">
             <n-collapse-item v-for="item in uniqueItems">
                 <template #header>
                     {{ getDateString(item.date) }}
@@ -69,6 +69,7 @@ export default {
     data() {
         return {
             items: [],
+            loading: false,
         };
     },
     computed: {
@@ -83,8 +84,12 @@ export default {
         },
     },
     methods: {
-        setItems(items) {
+        async setItems(items) {
+            // loading is done due to no programmatic control of NCollapseItem
+            this.loading = true;
+            await this.$nextTick();
             this.items = items;
+            this.loading = false;
         },
         getDateString(ms) {
             return moment.utc(ms).format('YYYY-MM-DD');
