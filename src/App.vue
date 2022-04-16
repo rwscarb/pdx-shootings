@@ -19,7 +19,7 @@
                 </n-dropdown>
             </div>
             <n-divider vertical/>
-            <div style="min-width: 16em">
+            <div style="width: 225px">
                 Displaying: {{ startFilterDate.format('MMM Do') }}
                 to {{ endFilterDate.format('MMM Do') }}
             </div>
