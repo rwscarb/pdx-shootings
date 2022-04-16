@@ -4,24 +4,26 @@
         <div id="map"></div>
     </main>
     <nav>
-        <n-card size="small" class="layer_control_card">
-            <div>
-                <n-switch v-model:value="showHeatMap" id="show_heatmap_switch"/>
-                <div class="control_label">
-                    <label for="show_heatmap_switch">Heatmap</label>
-                </div>
-            </div>
+        <n-space id="top_right_tools" align="center">
+            <div>Heatmap</div>
+            <n-switch v-model:value="showHeatMap"/>
             <n-divider vertical/>
             <div>
+                Year:
                 <n-dropdown trigger="hover"
-                    :options="yearOptions"
-                    @select="setYear"
-                    size="large"
-                    id="select_year_dropdown">
+                            :options="yearOptions"
+                            @select="setYear"
+                            size="large"
+                            id="select_year_dropdown">
                     <n-button>{{ year }}</n-button>
                 </n-dropdown>
             </div>
-        </n-card>
+            <n-divider vertical/>
+            <div style="min-width: 16em">
+                Displaying: {{ startFilterDate.format('MMM Do') }}
+                to {{ endFilterDate.format('MMM Do') }}
+            </div>
+        </n-space>
     </nav>
     <footer>
         <n-slider id="day_slider_input"
@@ -48,6 +50,10 @@ import {
     NButton,
     NSwitch,
     NCard,
+    NSpace,
+    NForm,
+    NFormItem,
+    NFormItemRow,
     NDivider,
 } from 'naive-ui';
 import mapboxgl from 'mapbox-gl';
@@ -82,6 +88,12 @@ export default {
         },
         minYear() {
             return _.last(this.availableYears);
+        },
+        startFilterDate() {
+            return moment.utc({year: this.year}).dayOfYear(this.value[0]);
+        },
+        endFilterDate() {
+            return moment.utc({year: this.year}).dayOfYear(this.value[1]);
         },
     },
     methods: {
@@ -218,6 +230,10 @@ export default {
         NButton,
         NSwitch,
         NCard,
+        NSpace,
+        NForm,
+        NFormItem,
+        NFormItemRow,
         NDivider,
     },
 };
@@ -255,32 +271,13 @@ footer {
     border-radius: 8px;
 }
 
-.n-button {
-    border: solid 1px #CFCFCF;
-}
-
-.layer_control_card {
-    max-width: 300px;
-    justify-content: space-evenly;
-
-    .control_label {
-        text-align: center;
-        font-size: 0.9em;
-    }
-
-    .n-card__content {
-        display: flex;
-        justify-content: space-evenly;
-        align-items: center;
-    }
-}
-
-.n-card {
-    background-color: rgba(255, 255, 255, .85);
-}
-
 #app, #map {
     width: 100vw;
     height: 100vh;
+}
+
+#top_right_tools {
+  background-color: white;
+  padding: 5px 10px;
 }
 </style>
