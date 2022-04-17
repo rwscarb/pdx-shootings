@@ -101,7 +101,7 @@ export default {
             return moment.utc({year: this.year}).dayOfYear(this.value[0]);
         },
         endFilterDate() {
-            return moment.utc({year: this.year}).dayOfYear(this.value[1]);
+            return moment.utc({year: this.year}).dayOfYear(this.value[1]).endOf('day');
         },
         dateFilter() {
             return ['all',
