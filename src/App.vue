@@ -279,6 +279,7 @@ nav {
   position: fixed;
   right: 0;
   top: 0;
+  max-width: calc(100vw - 50px);
 }
 
 footer {
