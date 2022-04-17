@@ -12,29 +12,30 @@
                 Year:
                 <n-dropdown trigger="hover"
                             :options="yearOptions"
-                            @select="setYear"
+                            @select="e => year = e"
                             size="large"
                             id="select_year_dropdown">
                     <n-button>{{ year }}</n-button>
                 </n-dropdown>
             </div>
             <n-divider vertical/>
-            <div style="width: 16em">
-                Displaying: {{ startFilterDate.format('MMM Do') }}
+            <div style="width: 12em">
+                Date: {{ startFilterDate.format('MMM Do') }}
                 to {{ endFilterDate.format('MMM Do') }}
             </div>
+            <n-divider vertical/>
+            <div style="width: 9em">Shootings: {{ shootingsCountDisplay }}</div>
         </n-space>
     </nav>
     <footer>
         <n-slider id="day_slider_input"
-            range
-            v-model="value"
-            :format-tooltip="formatDateSliderTooltip"
-            :step="1"
-            :min="1"
-            :max="365"
-            :default-value="[1, 31]"
-            @update:value="setMapFilter"
+                  range
+                  v-model:value="value"
+                  :format-tooltip="formatDateSliderTooltip"
+                  :step="1"
+                  :min="1"
+                  :max="365"
+                  :default-value="[1, 31]"
         />
     </footer>
 </template>
@@ -42,7 +43,7 @@
 <script>
 import 'mapbox-gl/dist/mapbox-gl.css';
 import _ from 'lodash';
-import { createApp } from 'vue';
+import {createApp} from 'vue';
 import moment from 'moment';
 import {
     NSlider,
@@ -57,7 +58,7 @@ import {
     NDivider,
 } from 'naive-ui';
 import mapboxgl from 'mapbox-gl';
-import { barrelCoords, barrelLayer, filterableLayers } from './constants';
+import {barrelCoords, barrelLayer, filterableLayers} from './constants';
 import Popup from './components/Popup.vue';
 import barrelImgUrl from './assets/street-barrel.png';
 
@@ -71,6 +72,7 @@ export default {
             yearOptions: [],
             showHeatMap: false,
             items: [],
+            shootingsCount: 0,
         };
     },
     watch: {
@@ -78,6 +80,12 @@ export default {
             const visibility = newVal ? 'visible' : 'none';
             window.$mapbox.setLayoutProperty('shootings-heatmap', 'visibility', visibility);
         },
+        filter() {
+            this.applyFilters();
+        },
+        year() {
+            this.applyFilters();
+        }
     },
     computed: {
         availableYears() {
@@ -95,8 +103,26 @@ export default {
         endFilterDate() {
             return moment.utc({year: this.year}).dayOfYear(this.value[1]);
         },
+        dateFilter() {
+            return ['all',
+                ['>=', ['get', 'date'], this.startFilterDate.unix() * 1000],
+                ['<=', ['get', 'date'], this.endFilterDate.unix() * 1000],
+            ];
+        },
+        filter() {
+            return this.dateFilter;
+        },
+        shootingsCountDisplay() {
+            return this.shootingsCount ? this.shootingsCount.toLocaleString() : '...';
+        },
     },
     methods: {
+        getFilteredFeatures() {
+            return window.$mapbox.querySourceFeatures('shootings', {
+                sourceLayer: 'shootings',
+                filter: this.filter
+            });
+        },
         incrementYear() {
             if (this.year < this.maxYear) {
                 this.setYear(this.year + 1);
@@ -113,7 +139,11 @@ export default {
                 data: '/shootings.geojson',
             });
             await Promise.all(_.map(filterableLayers, layer => window.$mapbox.addLayer(layer)));
-            await window.$mapbox.once('sourcedata', () => this.setMapFilter(this.value));
+            await window.$mapbox.on('sourcedata', e => {
+                if (e.sourceId === 'shootings' && e.isSourceLoaded) {
+                    this.applyFilters();
+                }
+            });
             window.$mapbox.loadImage(
                 barrelImgUrl,
                 (error, image) => {
@@ -142,7 +172,6 @@ export default {
         },
         setYear(year) {
             this.year = year;
-            this.setMapFilter(this.value);
         },
         getDateFromDayOfYear: function (value) {
             return moment.utc({year: this.year}).dayOfYear(value);
@@ -151,16 +180,14 @@ export default {
             const date = this.getDateFromDayOfYear(value);
             return date.format('MM/DD/YYYY');
         },
-        setMapFilter(value) {
-            let msMin = this.getDateFromDayOfYear(value[0]).unix() * 1000;
-            let msMax = this.getDateFromDayOfYear(value[1]).unix() * 1000;
+        applyFilters() {
+            if (!this.mapLoaded) return
+
+            const _this = this;
             _.forEach(filterableLayers, layer => {
-                window.$mapbox.setFilter(layer.id, ['all',
-                    ['>=', ['get', 'date'], msMin],
-                    ['<=', ['get', 'date'], msMax],
-                ]);
+                window.$mapbox.setFilter(layer.id, _this.filter);
             });
-            this.value = value;
+            this.shootingsCount = this.getFilteredFeatures().length;
         },
     },
     mounted() {
@@ -241,39 +268,39 @@ export default {
 
 <style lang="less">
 body {
-    margin: 0;
-    padding: 0;
+  margin: 0;
+  padding: 0;
 }
 
 nav {
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    position: fixed;
-    right: 0;
-    top: 0;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  position: fixed;
+  right: 0;
+  top: 0;
 }
 
 footer {
-    display: flex;
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100vw;
-    height: 10%;
+  display: flex;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100vw;
+  height: 10%;
 }
 
 #day_slider_input {
-    margin: 0 5em;
+  margin: 0 5em;
 }
 
 #select_year_dropdown {
-    border-radius: 8px;
+  border-radius: 8px;
 }
 
 #app, #map {
-    width: 100vw;
-    height: 100vh;
+  width: 100vw;
+  height: 100vh;
 }
 
 #top_right_tools {
