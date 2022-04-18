@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import calendar
 import csv
 import datetime
 import json
@@ -14,10 +15,11 @@ if response.ok:
     features = []
     for row in dr:
         coordinates = [float(row['Open Data Longitude']), float(row['Open Data Latitude'])]
+        uid = row['Incident Number']
         incident = {
             'block_address': row['Block Address'],
-            'id': row['Incident Number'],
-            'date': datetime.datetime.strptime(row['Occurence Date'], '%m/%d/%Y').timestamp() * 1000,
+            'id': uid,
+            'date': calendar.timegm(datetime.datetime.strptime(row['Occurence Date'], '%m/%d/%Y').timetuple()) * 1000,
             'injury': row['Person Injury'].strip().lower() == 'true',
             'precinct': row['Precinct'],
             'casings': int(row['CasingsRecovered']),
@@ -25,6 +27,7 @@ if response.ok:
         }
         if any(coordinates):
             features.append({
+                'id': uid,
                 'type': 'Feature',
                 'geometry': {
                     'type': 'Point',

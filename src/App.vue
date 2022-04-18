@@ -100,13 +100,19 @@ export default {
         startFilterDate() {
             return moment.utc({year: this.year}).dayOfYear(this.value[0]);
         },
+        startFilterDateMs() {
+            return this.startFilterDate.unix() * 1000;
+        },
         endFilterDate() {
             return moment.utc({year: this.year}).dayOfYear(this.value[1]).endOf('day');
         },
+        endFilterDateMs() {
+            return this.endFilterDate.unix() * 1000;
+        },
         dateFilter() {
             return ['all',
-                ['>=', ['get', 'date'], this.startFilterDate.unix() * 1000],
-                ['<=', ['get', 'date'], this.endFilterDate.unix() * 1000],
+                ['>=', ['get', 'date'], this.startFilterDateMs],
+                ['<=', ['get', 'date'], this.endFilterDateMs],
             ];
         },
         filter() {
@@ -115,14 +121,13 @@ export default {
         shootingsCountDisplay() {
             return this.shootingsCount ? this.shootingsCount.toLocaleString() : '...';
         },
-    },
-    methods: {
-        getFilteredFeatures() {
-            return window.$mapbox.querySourceFeatures('shootings', {
-                sourceLayer: 'shootings',
-                filter: this.filter
+        filteredFeatures() {
+            return _.filter(this.sourceData.features, x => {
+                return x.properties.date >= this.startFilterDateMs && x.properties.date <= this.endFilterDateMs;
             });
         },
+    },
+    methods: {
         incrementYear() {
             if (this.year < this.maxYear) {
                 this.setYear(this.year + 1);
@@ -134,9 +139,10 @@ export default {
             }
         },
         async onMapLoaded() {
+            this.sourceData = await (await fetch('/shootings.geojson')).json()
             await window.$mapbox.addSource('shootings', {
                 type: 'geojson',
-                data: '/shootings.geojson',
+                data: this.sourceData,
             });
             await Promise.all(_.map(filterableLayers, layer => window.$mapbox.addLayer(layer)));
             await window.$mapbox.on('sourcedata', e => {
@@ -187,7 +193,7 @@ export default {
             _.forEach(filterableLayers, layer => {
                 window.$mapbox.setFilter(layer.id, _this.filter);
             });
-            this.shootingsCount = this.getFilteredFeatures().length;
+            this.shootingsCount = this.filteredFeatures.length;
         },
     },
     mounted() {
@@ -250,6 +256,7 @@ export default {
     },
     created() {
         this.popupVueInstance = null;
+        this.sourceData = [];
     },
     components: {
         NSlider,
