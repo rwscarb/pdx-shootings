@@ -17,11 +17,19 @@
         <n-collapse v-if="!loading">
             <n-collapse-item v-for="item in uniqueItems">
                 <template #header>
-                    {{ getDateString(item.date) }}
-                    <span style="margin: 0 10px">Casings: {{ item.casings }}</span>
-                    <Icon v-if="item.injury">
-                        <PersonalInjuryRound/>
-                    </Icon>
+                    <div class="collapse_header">
+                        <div>
+                            {{ getDateString(item.date) }}
+                        </div>
+                        <div>
+                            <span style="margin: 0 10px">Casings: {{ item.casings }}</span>
+                        </div>
+                        <div style="text-align: right">
+                            <Icon>
+                                <PersonalInjuryRound v-if="item.injury"/>
+                            </Icon>
+                        </div>
+                    </div>
                 </template>
                 <n-table class="incident_table">
                     <tbody>
@@ -122,11 +130,17 @@ export default {
   padding-top: 10px;
 }
 
-.incident_table {
-  margin-left: -12px;
+.collapse_header {
+  display: flex;
+  justify-content: space-between;
+  min-width: 13em;
 }
 
 .n-table td {
   white-space: nowrap;
+}
+
+.n-table {
+  margin: 0;
 }
 </style>
