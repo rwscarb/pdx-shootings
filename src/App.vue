@@ -46,7 +46,7 @@
                             <a href="https://www.naiveui.com/" target="_blank">NaiveUI</a>,
                             and <a href="https://www.mapbox.com/" target="_blank">Mapbox</a>.
                         </p>
-                        <p>Data sourced from: <a href="https://public.tableau.com/views/PPBOpenDataDownloads/Shootings.csv?:showVizHome=no" target="_blank">PBB</a></p>
+                        <p>Data sourced from: <a href="https://public.tableau.com/views/PPBOpenDataDownloads/Shootings.csv?:showVizHome=no" target="_blank">PPB</a></p>
                         <template #footer>
                             Author: <a href="mailto:ryan.scarbery@gmail.com">Ryan Scarbery</a>
                         </template>
