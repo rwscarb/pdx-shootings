@@ -88,6 +88,11 @@ export default {
             loading: false,
         };
     },
+    watch: {
+        loading() {
+            this.$el.scrollTo(0, 0);
+        }
+    },
     computed: {
         uniqueItems() {
             return _.uniqBy(this.items, 'id');
