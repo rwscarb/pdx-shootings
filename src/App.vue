@@ -24,7 +24,9 @@
                 to {{ endFilterDate.format('MMM Do') }}
             </div>
             <n-divider vertical/>
-            <div style="width: 9em">Shootings: {{ shootingsCountDisplay }}</div>
+            <div style="width: 7.6em">Shootings: {{ shootingsCountDisplay }}</div>
+            <n-divider vertical/>
+            <div></div>
         </n-space>
     </nav>
     <footer>
