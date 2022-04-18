@@ -19,12 +19,19 @@
                 </n-dropdown>
             </div>
             <n-divider vertical/>
-            <div style="width: 12em">
+            <div style="min-width: 12em">
                 Date: {{ startFilterDate.format('MMM Do') }}
                 to {{ endFilterDate.format('MMM Do') }}
             </div>
             <n-divider vertical/>
-            <div style="width: 7.6em">Shootings: {{ shootingsCountDisplay }}</div>
+            <div  style="min-width: 8em">
+                Shootings:
+                <n-number-animation
+                        show-separator
+                        :from="0"
+                        :to="shootingsCount"
+                        :duration="500"/>
+            </div>
             <n-divider vertical/>
             <div></div>
         </n-space>
@@ -58,6 +65,7 @@ import {
     NFormItem,
     NFormItemRow,
     NDivider,
+    NNumberAnimation,
 } from 'naive-ui';
 import mapboxgl from 'mapbox-gl';
 import {barrelCoords, barrelLayer, filterableLayers} from './constants';
@@ -119,9 +127,6 @@ export default {
         },
         filter() {
             return this.dateFilter;
-        },
-        shootingsCountDisplay() {
-            return this.shootingsCount ? this.shootingsCount.toLocaleString() : '...';
         },
         filteredFeatures() {
             return _.filter(this.sourceData.features, x => {
@@ -271,6 +276,7 @@ export default {
         NFormItem,
         NFormItemRow,
         NDivider,
+        NNumberAnimation,
     },
 };
 </script>
