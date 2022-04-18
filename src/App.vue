@@ -152,7 +152,7 @@ export default {
             ];
         },
         filter() {
-            return this.dateFilter;
+            return ['all', this.dateFilter];
         },
         filteredFeatures() {
             return _.filter(this.sourceData.features, x => {

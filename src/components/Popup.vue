@@ -69,7 +69,15 @@
 import _ from 'lodash'
 import moment from 'moment'
 
-import { NStatistic, NNumberAnimation, NCollapse, NCollapseItem, NTable, NDivider, NBadge } from 'naive-ui'
+import {
+    NStatistic,
+    NNumberAnimation,
+    NCollapse,
+    NCollapseItem,
+    NTable,
+    NDivider,
+    NBadge
+} from 'naive-ui'
 import { Icon } from '@vicons/utils'
 import { PersonalInjuryRound } from '@vicons/material'
 
