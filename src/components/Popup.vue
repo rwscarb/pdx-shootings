@@ -15,7 +15,7 @@
         </n-badge>
         <n-divider></n-divider>
         <n-collapse v-if="!loading">
-            <n-collapse-item v-for="item in uniqueItems">
+            <n-collapse-item v-for="item in sortedUniqueItems">
                 <template #header>
                     <div class="collapse_header">
                         <div>
@@ -83,6 +83,9 @@ export default {
     computed: {
         uniqueItems() {
             return _.uniqBy(this.items, 'id');
+        },
+        sortedUniqueItems() {
+            return _.orderBy(this.uniqueItems, 'date');
         },
         hasInjury() {
             return _.some(this.uniqueItems, x => x.injury);
