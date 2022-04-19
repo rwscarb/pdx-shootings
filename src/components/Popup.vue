@@ -31,7 +31,7 @@
                         <div>
                             {{ getDateString(item.date) }}
                         </div>
-                        <div>
+                        <div style="flex-grow: 1">
                             <span style="margin: 0 10px">Casings: {{ item.casings }}</span>
                         </div>
                         <div style="text-align: right">
