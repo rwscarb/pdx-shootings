@@ -35,7 +35,7 @@
                             <span style="margin: 0 10px">Casings: {{ item.casings }}</span>
                         </div>
                         <div style="text-align: right">
-                            <icon>
+                            <icon class="injury">
                                 <personal-injury-round v-if="item.injury"/>
                             </icon>
                         </div>
