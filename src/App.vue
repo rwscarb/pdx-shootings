@@ -6,11 +6,10 @@
     <nav>
         <n-grid id="top_right_tools" cols="5">
             <n-gi>
-                Heatmap
-                <n-switch v-model:value="showHeatMap"/>
+                Heatmap <n-switch v-model:value="showHeatMap"/>
             </n-gi>
             <n-gi>
-                Year:
+                Year
                 <n-dropdown trigger="hover"
                             :options="yearOptions"
                             @select="e => year = e"
@@ -55,9 +54,14 @@
         />
         <n-drawer v-model:show="showDrawer" placement="bottom">
             <n-drawer-content title="Filters">
-                <n-checkbox v-model:checked="injuryOnly">
-                    Injury Only
-                </n-checkbox>
+                <n-space style="display: flex" vertical>
+                    <n-checkbox v-model:checked="injuryOnly">
+                        Injury Only
+                    </n-checkbox>
+                    <n-checkbox v-model:checked="showBarrels">
+                        Show Traffic Barrels
+                    </n-checkbox>
+                </n-space>
             </n-drawer-content>
         </n-drawer>
     </footer>
@@ -71,14 +75,13 @@ import moment from 'moment'
 import {
     NButton,
     NCheckbox,
-    NDivider,
     NDrawer,
     NDrawerContent,
     NDropdown, NGi, NGrid,
     NNumberAnimation,
     NSlider,
-    NSpace,
-    NSwitch
+    NSwitch,
+    NSpace
 } from 'naive-ui'
 import mapboxgl from 'mapbox-gl'
 import { FilterAltOutlined } from '@vicons/material'
@@ -88,7 +91,7 @@ import { Icon } from '@vicons/utils'
 import Popup from './components/Popup.vue'
 import AboutLink from './components/AboutLink.vue'
 
-import { barrelCoords, barrelLayer, filterableLayers } from './constants'
+import { barrelLayer, filterableLayers } from './constants'
 import barrelImgUrl from './assets/street-barrel.png'
 
 
@@ -104,6 +107,7 @@ export default {
             shootingsCount: 0,
             showDrawer: false,
             injuryOnly: false,
+            showBarrels: false,
         };
     },
     watch: {
@@ -111,12 +115,16 @@ export default {
             const visibility = newVal ? 'visible' : 'none';
             window.$mapbox.setLayoutProperty('shootings-heatmap', 'visibility', visibility);
         },
+        showBarrels(newVal) {
+            const visibility = newVal ? 'visible' : 'none';
+            window.$mapbox.setLayoutProperty('barrels', 'visibility', visibility);
+        },
         filter() {
             this.applyFilters();
         },
         year() {
             this.applyFilters();
-        }
+        },
     },
     computed: {
         availableYears() {
@@ -178,7 +186,10 @@ export default {
                 type: 'geojson',
                 data: this.sourceData,
             });
-            await Promise.all(_.map(filterableLayers, layer => window.$mapbox.addLayer(layer)));
+            await window.$mapbox.addSource('barrels', {
+                'type': 'geojson',
+                'data': '/barrels.geojson',
+            });
             await window.$mapbox.on('sourcedata', e => {
                 if (e.sourceId === 'shootings' && e.isSourceLoaded) {
                     this.applyFilters();
@@ -188,26 +199,10 @@ export default {
                 barrelImgUrl,
                 (error, image) => {
                     if (error) throw error;
-
                     window.$mapbox.addImage('barrel', image);
-
-                    window.$mapbox.addSource('barrels', {
-                        'type': 'geojson',
-                        'data': {
-                            'type': 'FeatureCollection',
-                            'features': _.map(barrelCoords, x => ({
-                                'type': 'Feature',
-                                'geometry': {
-                                    'type': 'Point',
-                                    'coordinates': x,
-                                },
-                            })),
-                        },
-                    });
-
-                    window.$mapbox.addLayer(barrelLayer);
                 },
             );
+            await Promise.all(_.map(filterableLayers, layer => window.$mapbox.addLayer(layer)));
             this.mapLoaded = true;
         },
         setYear(year) {
@@ -299,8 +294,6 @@ export default {
         NDropdown,
         NButton,
         NSwitch,
-        NSpace,
-        NDivider,
         NNumberAnimation,
         FilterAltOutlined,
         NDrawer,
@@ -308,6 +301,7 @@ export default {
         NCheckbox,
         NGrid,
         NGi,
+        NSpace,
     },
 };
 </script>

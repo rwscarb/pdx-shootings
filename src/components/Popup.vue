@@ -10,7 +10,7 @@
                 <n-number-animation
                         :from="0"
                         :to="totalCasings"
-                        :duration="2000"/>
+                        :duration="1000"/>
             </n-statistic>
         </n-badge>
         <n-divider></n-divider>
@@ -25,9 +25,9 @@
                             <span style="margin: 0 10px">Casings: {{ item.casings }}</span>
                         </div>
                         <div style="text-align: right">
-                            <Icon>
-                                <PersonalInjuryRound v-if="item.injury"/>
-                            </Icon>
+                            <icon>
+                                <personal-injury-round v-if="item.injury"/>
+                            </icon>
                         </div>
                     </div>
                 </template>
@@ -137,7 +137,7 @@ export default {
 };
 </script>
 
-<style lang="less">
+<style lang="less" scoped>
 .vue_popup {
   max-height: 15em;
   min-width: 217px;

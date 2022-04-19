@@ -94,23 +94,16 @@ export const barrelLayer = {
             ['exponential', 0.5],
             ['zoom'],
             12,
-            0.1,
+            0.05,
+            13,
+            0.07,
             15,
-            0.2,
-            18,
-            0.3
+            0.1,
+            16,
+            0.3,
         ]
     }
 };
 
-export const filterableLayers = [circleLayer, circleLayerHover, heatmapLayer];
-export const nonFilterableLayers = [barrelLayer];
-
-// todo: get real coords
-export const barrelCoords = [
-    [-122.589353, 45.480296],
-    [-122.586710, 45.480319],
-    [-122.5900075, 45.482968],
-    [-122.587996, 45.483066],
-];
-
+export const filterableLayers = [barrelLayer, circleLayer, circleLayerHover, heatmapLayer];
+export const nonFilterableLayers = [];

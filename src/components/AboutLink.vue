@@ -1,10 +1,10 @@
 <template>
     <n-button @click="showInfoModal = true">
-        <n-modal v-model:show="showInfoModal">
+        <n-modal v-model:show="showInfoModal" :auto-focus="false">
             <n-card style="max-width: 20em; text-align: center" size="huge">
-                <template #header style="vertical-align: middle">
+                <template #header>
                     Info
-                    <icon size="18" style="vertical-align: middle; margin-top: -3px">
+                    <icon size="18">
                         <info-outlined/>
                     </icon>
                 </template>
@@ -21,7 +21,7 @@
                 </template>
             </n-card>
         </n-modal>
-        <Icon size="24" style="vertical-align: middle">
+        <Icon size="24">
             <info-outlined/>
         </Icon>
     </n-button>
@@ -29,9 +29,6 @@
 <script>
 import {
     NButton,
-    NDivider,
-    NNumberAnimation,
-    NSpace,
     NCard,
     NModal,
 } from 'naive-ui'
@@ -50,13 +47,8 @@ export default {
         NButton,
         Icon,
         InfoOutlined,
-        NSpace,
-        NDivider,
-        NNumberAnimation,
         NCard,
         NModal,
     },
 }
 </script>
-<style lang="less">
-</style>
