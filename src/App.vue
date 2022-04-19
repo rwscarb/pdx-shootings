@@ -4,7 +4,7 @@
         <div id="map"></div>
     </main>
     <nav>
-        <n-grid id="top_right_tools" cols="5" x-gap="10">
+        <n-grid id="top_right_tools" cols="5">
             <n-gi>
                 Heatmap
                 <n-switch v-model:value="showHeatMap"/>
@@ -20,8 +20,10 @@
                 </n-dropdown>
             </n-gi>
             <n-gi>
-                Date: <div style="display: inline-block; min-width: 5em">{{ startFilterDate.format('MMM Do') }}</div>
-                to <div style="display: inline-block; min-width: 5em">{{ endFilterDate.format('MMM Do') }}</div>
+                Date:
+                <div class="fixed_width_date">{{ startFilterDate.format('MMM Do') }}</div>
+                to
+                <div class="fixed_width_date">{{ endFilterDate.format('MMM Do') }}</div>
             </n-gi>
             <n-gi>
                 Shootings:
@@ -31,7 +33,7 @@
                         :to="shootingsCount"
                         :duration="500"/>
             </n-gi>
-            <n-gi style="justify-self: flex-end">
+            <n-gi id="nav_extra_icons">
                 <n-button @click="showDrawer = !showDrawer">
                     <icon size="24">
                         <filter-alt-outlined/>
@@ -354,5 +356,22 @@ footer {
   align-items: center;
   justify-items: center;
   text-align: center;
+
+  > div {
+    margin: 0 .5em;
+  }
+}
+
+#nav_extra_icons {
+  justify-self: flex-end;
+
+  > button {
+    margin: 0 .5em;
+  }
+}
+
+.fixed_width_date {
+  display: inline-block;
+  min-width: 4.3;
 }
 </style>
