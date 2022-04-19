@@ -91,7 +91,7 @@ import { Icon } from '@vicons/utils'
 import Popup from './components/Popup.vue'
 import AboutLink from './components/AboutLink.vue'
 
-import { barrelLayer, filterableLayers } from './constants'
+import { filterableLayers, nonFilterableLayers } from './constants'
 import barrelImgUrl from './assets/street-barrel.png'
 
 
@@ -202,7 +202,7 @@ export default {
                     window.$mapbox.addImage('barrel', image);
                 },
             );
-            await Promise.all(_.map(filterableLayers, layer => window.$mapbox.addLayer(layer)));
+            await Promise.all(_.map([...filterableLayers, ...nonFilterableLayers], layer => window.$mapbox.addLayer(layer)));
             this.mapLoaded = true;
         },
         setYear(year) {

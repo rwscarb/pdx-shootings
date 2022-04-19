@@ -84,10 +84,11 @@ export const circleLayerHover = {
 };
 
 export const barrelLayer = {
-    'id': 'barrels',
-    'type': 'symbol',
-    'source': 'barrels',
-    'layout': {
+    id: 'barrels',
+    type: 'symbol',
+    source: 'barrels',
+    layout: {
+        visibility: 'none',
         'icon-image': 'barrel',
         'icon-size': [
             'interpolate',
@@ -105,5 +106,5 @@ export const barrelLayer = {
     }
 };
 
-export const filterableLayers = [barrelLayer, circleLayer, circleLayerHover, heatmapLayer];
-export const nonFilterableLayers = [];
+export const filterableLayers = [circleLayer, circleLayerHover, heatmapLayer];
+export const nonFilterableLayers = [barrelLayer];
