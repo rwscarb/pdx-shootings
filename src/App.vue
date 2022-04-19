@@ -20,8 +20,8 @@
                 </n-dropdown>
             </n-gi>
             <n-gi>
-                Date: {{ startFilterDate.format('MMM Do') }}
-                to {{ endFilterDate.format('MMM Do') }}
+                Date: <div style="display: inline-block; min-width: 5em">{{ startFilterDate.format('MMM Do') }}</div>
+                to <div style="display: inline-block; min-width: 5em">{{ endFilterDate.format('MMM Do') }}</div>
             </n-gi>
             <n-gi>
                 Shootings:
