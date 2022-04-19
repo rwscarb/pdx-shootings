@@ -372,6 +372,6 @@ footer {
 
 .fixed_width_date {
   display: inline-block;
-  min-width: 4.3;
+  min-width: 4.3em;
 }
 </style>
