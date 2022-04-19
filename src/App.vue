@@ -4,7 +4,7 @@
         <div id="map"></div>
     </main>
     <nav>
-        <n-grid id="top_right_tools" cols="5" x-gap="10" style="align-items: center; justify-items: center">
+        <n-grid id="top_right_tools" cols="5" x-gap="10">
             <n-gi>
                 Heatmap
                 <n-switch v-model:value="showHeatMap"/>
@@ -351,5 +351,8 @@ footer {
 #top_right_tools {
   background-color: white;
   padding: 5px 5px 5px 10px;
+  align-items: center;
+  justify-items: center;
+  text-align: center;
 }
 </style>
