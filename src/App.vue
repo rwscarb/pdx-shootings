@@ -4,11 +4,12 @@
         <div id="map"></div>
     </main>
     <nav>
-        <n-space id="top_right_tools" align="center" justify="end">
-            <div>Heatmap</div>
-            <n-switch v-model:value="showHeatMap"/>
-            <n-divider vertical/>
-            <div>
+        <n-grid id="top_right_tools" cols="5" x-gap="10" style="align-items: center; justify-items: center">
+            <n-gi>
+                Heatmap
+                <n-switch v-model:value="showHeatMap"/>
+            </n-gi>
+            <n-gi>
                 Year:
                 <n-dropdown trigger="hover"
                             :options="yearOptions"
@@ -17,24 +18,28 @@
                             id="select_year_dropdown">
                     <n-button>{{ year }}</n-button>
                 </n-dropdown>
-            </div>
-            <n-divider vertical/>
-            <div style="min-width: 12em">
+            </n-gi>
+            <n-gi>
                 Date: {{ startFilterDate.format('MMM Do') }}
                 to {{ endFilterDate.format('MMM Do') }}
-            </div>
-            <n-divider vertical/>
-            <div style="min-width: 8em">
+            </n-gi>
+            <n-gi>
                 Shootings:
                 <n-number-animation
                         show-separator
                         :from="0"
                         :to="shootingsCount"
                         :duration="500"/>
-            </div>
-            <n-divider vertical/>
-            <AboutLink/>
-        </n-space>
+            </n-gi>
+            <n-gi style="justify-self: flex-end">
+                <n-button @click="showDrawer = !showDrawer">
+                    <icon size="24">
+                        <filter-alt-outlined/>
+                    </icon>
+                </n-button>
+                <about-link/>
+            </n-gi>
+        </n-grid>
     </nav>
     <footer>
         <n-slider id="day_slider_input"
@@ -46,6 +51,13 @@
                   :max="365"
                   :default-value="[1, 31]"
         />
+        <n-drawer v-model:show="showDrawer" placement="bottom">
+            <n-drawer-content title="Filters">
+                <n-checkbox v-model:checked="injuryOnly">
+                    Injury Only
+                </n-checkbox>
+            </n-drawer-content>
+        </n-drawer>
     </footer>
 </template>
 
@@ -54,8 +66,22 @@ import 'mapbox-gl/dist/mapbox-gl.css'
 import _ from 'lodash'
 import { createApp } from 'vue'
 import moment from 'moment'
-import { NButton, NDivider, NDropdown, NNumberAnimation, NSlider, NSpace, NSwitch } from 'naive-ui'
+import {
+    NButton,
+    NCheckbox,
+    NDivider,
+    NDrawer,
+    NDrawerContent,
+    NDropdown, NGi, NGrid,
+    NNumberAnimation,
+    NSlider,
+    NSpace,
+    NSwitch
+} from 'naive-ui'
 import mapboxgl from 'mapbox-gl'
+import { FilterAltOutlined } from '@vicons/material'
+import { Icon } from '@vicons/utils'
+
 
 import Popup from './components/Popup.vue'
 import AboutLink from './components/AboutLink.vue'
@@ -74,6 +100,8 @@ export default {
             showHeatMap: false,
             items: [],
             shootingsCount: 0,
+            showDrawer: false,
+            injuryOnly: false,
         };
     },
     watch: {
@@ -116,12 +144,18 @@ export default {
                 ['<=', ['get', 'date'], this.endFilterDateMs],
             ];
         },
+        injuryFilter() {
+            return ['any', ['!', this.injuryOnly], ['get', 'injury']];
+        },
         filter() {
-            return ['all', this.dateFilter];
+            return ['all', this.dateFilter, this.injuryFilter];
         },
         filteredFeatures() {
             return _.filter(this.sourceData.features, x => {
-                return x.properties.date >= this.startFilterDateMs && x.properties.date <= this.endFilterDateMs;
+                return _.every([
+                    x.properties.date >= this.startFilterDateMs && x.properties.date <= this.endFilterDateMs,
+                    this.injuryOnly ? x.properties.injury : true,
+                ]);
             });
         },
     },
@@ -257,6 +291,7 @@ export default {
         this.sourceData = [];
     },
     components: {
+        Icon,
         AboutLink,
         NSlider,
         NDropdown,
@@ -265,6 +300,12 @@ export default {
         NSpace,
         NDivider,
         NNumberAnimation,
+        FilterAltOutlined,
+        NDrawer,
+        NDrawerContent,
+        NCheckbox,
+        NGrid,
+        NGi,
     },
 };
 </script>

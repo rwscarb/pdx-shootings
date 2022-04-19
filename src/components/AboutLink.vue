@@ -4,9 +4,9 @@
             <n-card style="max-width: 20em; text-align: center" size="huge">
                 <template #header style="vertical-align: middle">
                     Info
-                    <Icon size="18" style="vertical-align: middle; margin-top: -3px">
-                        <InfoOutlined/>
-                    </Icon>
+                    <icon size="18" style="vertical-align: middle; margin-top: -3px">
+                        <info-outlined/>
+                    </icon>
                 </template>
                 <p>
                     Created with <a href="https://vuejs.org/" target="_blank">Vuejs</a>,
@@ -22,7 +22,7 @@
             </n-card>
         </n-modal>
         <Icon size="24" style="vertical-align: middle">
-            <InfoOutlined/>
+            <info-outlined/>
         </Icon>
     </n-button>
 </template>
