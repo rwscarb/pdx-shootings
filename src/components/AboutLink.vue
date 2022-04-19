@@ -16,9 +16,6 @@
                 <p>Data sourced from: <a
                         href="https://public.tableau.com/views/PPBOpenDataDownloads/Shootings.csv?:showVizHome=no"
                         target="_blank">PPB</a></p>
-                <template #footer>
-                    Author: <a href="mailto:ryan.scarbery@gmail.com">Ryan Scarbery</a>
-                </template>
             </n-card>
         </n-modal>
         <Icon size="24">
