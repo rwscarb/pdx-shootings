@@ -66,7 +66,7 @@ export const circleLayer = {
     },
     paint: {
         'circle-radius': 3,
-        'circle-color': ['case', ['get', 'injury'], '#660000', '#1F70D3']
+        'circle-color': ['case', ['get', 'injury'], '#D03050', '#1F70D3']
     }
 };
 
