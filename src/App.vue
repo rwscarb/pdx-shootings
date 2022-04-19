@@ -33,29 +33,7 @@
                         :duration="500"/>
             </div>
             <n-divider vertical/>
-            <n-button @click="showInfoModal = true">
-                <n-modal v-model:show="showInfoModal">
-                    <n-card style="max-width: 20em; text-align: center" size="huge">
-                        <template #header style="vertical-align: middle">
-                            Info <Icon size="18" style="vertical-align: middle; margin-top: -3px">
-                                <InfoOutlined/>
-                            </Icon>
-                        </template>
-                        <p>
-                            Created with <a href="https://vuejs.org/" target="_blank">Vuejs</a>,
-                            <a href="https://www.naiveui.com/" target="_blank">NaiveUI</a>,
-                            and <a href="https://www.mapbox.com/" target="_blank">Mapbox</a>.
-                        </p>
-                        <p>Data sourced from: <a href="https://public.tableau.com/views/PPBOpenDataDownloads/Shootings.csv?:showVizHome=no" target="_blank">PPB</a></p>
-                        <template #footer>
-                            Author: <a href="mailto:ryan.scarbery@gmail.com">Ryan Scarbery</a>
-                        </template>
-                    </n-card>
-                </n-modal>
-                <Icon size="24" style="vertical-align: middle">
-                    <InfoOutlined/>
-                </Icon>
-            </n-button>
+            <AboutLink/>
         </n-space>
     </nav>
     <footer>
@@ -76,25 +54,13 @@ import 'mapbox-gl/dist/mapbox-gl.css'
 import _ from 'lodash'
 import { createApp } from 'vue'
 import moment from 'moment'
-import {
-    NSlider,
-    NDropdown,
-    NButton,
-    NSwitch,
-    NCard,
-    NSpace,
-    NForm,
-    NFormItem,
-    NFormItemRow,
-    NDivider,
-    NNumberAnimation,
-    NModal,
-} from 'naive-ui'
-import { Icon } from '@vicons/utils'
-import { InfoOutlined } from '@vicons/material'
+import { NButton, NDivider, NDropdown, NNumberAnimation, NSlider, NSpace, NSwitch } from 'naive-ui'
 import mapboxgl from 'mapbox-gl'
-import { barrelCoords, barrelLayer, filterableLayers } from './constants'
+
 import Popup from './components/Popup.vue'
+import AboutLink from './components/AboutLink.vue'
+
+import { barrelCoords, barrelLayer, filterableLayers } from './constants'
 import barrelImgUrl from './assets/street-barrel.png'
 
 
@@ -108,7 +74,6 @@ export default {
             showHeatMap: false,
             items: [],
             shootingsCount: 0,
-            showInfoModal: false,
         };
     },
     watch: {
@@ -292,20 +257,14 @@ export default {
         this.sourceData = [];
     },
     components: {
+        AboutLink,
         NSlider,
         NDropdown,
         NButton,
         NSwitch,
-        NCard,
         NSpace,
-        NForm,
-        NFormItem,
-        NFormItemRow,
         NDivider,
         NNumberAnimation,
-        Icon,
-        InfoOutlined,
-        NModal,
     },
 };
 </script>
