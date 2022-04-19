@@ -1,18 +1,28 @@
 <template>
     <div class="vue_popup">
-        <n-badge>
-            <template #value>
-                <Icon v-if="hasInjury">
-                    <PersonalInjuryRound/>
-                </Icon>
-            </template>
-            <n-statistic label="Casings Recovered">
-                <n-number-animation
-                        :from="0"
-                        :to="totalCasings"
-                        :duration="1000"/>
-            </n-statistic>
-        </n-badge>
+        <n-grid cols="2" style="margin-left: 1em">
+            <n-gi>
+                <n-statistic label="Casings">
+                    <n-number-animation
+                            :from="0"
+                            :to="totalCasings"
+                            :duration="1000"/>
+                </n-statistic>
+            </n-gi>
+            <n-gi>
+                <n-statistic>
+                    <template #label>
+                        <span :class="{injury: hasInjury}">
+                            Incidents
+                        </span>
+                    </template>
+                    <n-number-animation
+                            :from="0"
+                            :to="sortedUniqueItems.length"
+                            :duration="1000"/>
+                </n-statistic>
+            </n-gi>
+        </n-grid>
         <n-divider></n-divider>
         <n-collapse v-if="!loading">
             <n-collapse-item v-for="item in sortedUniqueItems">
@@ -76,7 +86,9 @@ import {
     NCollapseItem,
     NTable,
     NDivider,
-    NBadge
+    NBadge,
+    NGrid,
+    NGi,
 } from 'naive-ui'
 import { Icon } from '@vicons/utils'
 import { PersonalInjuryRound } from '@vicons/material'
@@ -133,6 +145,8 @@ export default {
         NTable,
         NDivider,
         NBadge,
+        NGrid,
+        NGi,
     },
 };
 </script>
@@ -142,6 +156,7 @@ export default {
   max-height: 15em;
   min-width: 217px;
   overflow-y: auto;
+  overflow-x: hidden;
   padding-right: 13px;
   padding-top: 10px;
 }
@@ -158,5 +173,9 @@ export default {
 
 .n-table {
   margin: 0;
+}
+
+.injury {
+  color: #D03050;
 }
 </style>
