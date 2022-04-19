@@ -108,3 +108,5 @@ export const barrelLayer = {
 
 export const filterableLayers = [circleLayer, circleLayerHover, heatmapLayer];
 export const nonFilterableLayers = [barrelLayer];
+export const MIN_ZOOM = 11.40;
+export const MAX_ZOOM = 15.66;

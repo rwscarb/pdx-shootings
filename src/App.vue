@@ -58,8 +58,8 @@
                     <n-checkbox v-model:checked="injuryOnly">
                         Injury Only
                     </n-checkbox>
-                    <n-checkbox v-model:checked="showBarrels">
-                        Show Traffic Barrels
+                    <n-checkbox v-model:checked="showBarrels" title="Most recently fetched and marked active">
+                        Traffic Barrels
                     </n-checkbox>
                 </n-space>
             </n-drawer-content>
@@ -91,7 +91,7 @@ import { Icon } from '@vicons/utils'
 import Popup from './components/Popup.vue'
 import AboutLink from './components/AboutLink.vue'
 
-import { filterableLayers, nonFilterableLayers } from './constants'
+import { filterableLayers, nonFilterableLayers, MAX_ZOOM, MIN_ZOOM } from './constants'
 import barrelImgUrl from './assets/street-barrel.png'
 
 
@@ -233,6 +233,8 @@ export default {
             style: 'mapbox://styles/mapbox/dark-v10',
             center: [-122.67598626624789, 45.51939452327494],
             zoom: 12,
+            minZoom: MIN_ZOOM,
+            maxZoom: MAX_ZOOM
         });
         window.$mapbox.addControl(new mapboxgl.NavigationControl(), 'top-left');
         window.$mapbox.addControl(new mapboxgl.FullscreenControl(), 'top-left');
