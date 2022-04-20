@@ -11,20 +11,16 @@
             </div>
             <div id="filter_date_picker">
                 <div class="small_date_pickers">
-                    <n-date-picker size="small"
-                        :value="startFilterDateMs"
+                    <small-datepicker
+                        :value="startFilterDateIso"
                         @update:value="setStartFilterDate"
-                        :is-date-disabled="dateIsInvalid"
-                        format="E. MMM do yyyy"
                     />
                     <icon>
                         <arrow-forward-filled/>
                     </icon>
-                    <n-date-picker size="small"
-                        :value="endFilterDateMs"
-                        @update:value="setEndFilterDate"
-                        :is-date-disabled="dateIsInvalid"
-                        format="E. MMM do yyyy"
+                    <small-datepicker
+                        :value="endFilterDateIso"
+                        @update:value="setStartFilterDate"
                     />
                 </div>
                 <div class="range_picker">
@@ -108,12 +104,14 @@ import { Icon } from '@vicons/utils'
 
 import Popup from './components/Popup.vue'
 import AboutLink from './components/AboutLink.vue'
+import SmallDatepicker from './components/SmallDatepicker.vue';
 
 import { filterableLayers, nonFilterableLayers, MAX_ZOOM, MIN_ZOOM } from './constants'
 import barrelImgUrl from './assets/street-barrel.png'
 
 
 export default {
+    name: 'App',
     data() {
         const today = moment().startOf('day');
         const start = today.clone().subtract(1, 'year').unix() * 1000;
@@ -166,11 +164,17 @@ export default {
         startFilterDateMs() {
             return this.startFilterDate.unix() * 1000;
         },
+        startFilterDateIso() {
+            return this.startFilterDate.format('YYYY-MM-DD');
+        },
         endFilterDate() {
             return moment(this.dates[1]);
         },
         endFilterDateMs() {
             return this.endFilterDate.unix() * 1000;
+        },
+        endFilterDateIso() {
+            return this.endFilterDate.format('YYYY-MM-DD');
         },
         startSliderDate() {
             return moment(this.value[0]);
@@ -200,15 +204,21 @@ export default {
         },
     },
     methods: {
-        setStartFilterDate(val) {
-            if (!this.dateIsInvalid(val)) {
-                this.dates[0] = val;
+        setStartFilterDate(value) {
+            const date = moment(value, 'YYYY-MM-DD');
+            if (this.dateIsInvalid(date)) {
+                return;
             }
+            const newRange = [date.unix() * 1000, this.dates[1]];
+            this.applyDateRange(newRange);
         },
-        setEndFilterDate(val) {
-            if (!this.dateIsInvalid(val)) {
-                this.dates[1] = val;
+        setEndFilterDate(value) {
+            const date = moment(value, 'YYYY-MM-DD');
+            if (this.dateIsInvalid(date)) {
+                return;
             }
+            const newRange = [this.dates[0], date.unix() * 1000];
+            this.applyDateRange(newRange);
         },
         applyDateRange(value) {
             this.dates = value;
@@ -346,6 +356,7 @@ export default {
         NDatePicker,
         FilterAltOutlined,
         ArrowForwardFilled,
+        SmallDatepicker,
     },
 };
 </script>

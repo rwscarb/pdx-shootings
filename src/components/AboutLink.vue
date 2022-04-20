@@ -39,7 +39,7 @@ import { InfoOutlined } from '@vicons/material'
 
 
 export default {
-    name: 'About',
+    name: 'AboutLink',
     data() {
         return {
             showInfoModal: false

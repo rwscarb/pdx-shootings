@@ -94,6 +94,7 @@ import { Icon } from '@vicons/utils'
 import { PersonalInjuryRound } from '@vicons/material'
 
 export default {
+    name: 'Popup',
     data() {
         return {
             items: [],
