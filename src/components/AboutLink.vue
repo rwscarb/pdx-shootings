@@ -13,9 +13,14 @@
                     <a href="https://www.naiveui.com/" target="_blank">NaiveUI</a>,
                     and <a href="https://www.mapbox.com/" target="_blank">Mapbox</a>.
                 </p>
-                <p>Data sourced from: <a
-                        href="https://public.tableau.com/views/PPBOpenDataDownloads/Shootings.csv?:showVizHome=no"
-                        target="_blank">PPB</a></p>
+                <p>
+                    Data sourced from:<br/>
+                    <a
+                        href="https://www.portlandoregon.gov/police/81203"
+                        target="_blank">PPB</a> and
+                    <a href="https://pdx.maps.arcgis.com/apps/webappviewer/index.html?id=08e3f719c5ec4be195f17c38cff8fce3"
+                       target="_blank">PBOT</a>
+                </p>
             </n-card>
         </n-modal>
         <Icon size="24">
