@@ -1,5 +1,7 @@
 # [pdx-shootings](https://map.pdx-shootings.com/)
 
+[![Fetch and Deploy](https://github.com/rwscarb/pdx-shootings/actions/workflows/default.yml/badge.svg)](https://github.com/rwscarb/pdx-shootings/actions/workflows/default.yml)
+
 ## Project Setup
 
 ```sh
