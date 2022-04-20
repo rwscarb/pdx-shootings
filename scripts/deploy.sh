@@ -9,10 +9,12 @@ cd dist
 
 echo 'map.pdx-shootings.com' > CNAME
 
+git config --global init.defaultBranch master
+git config --global user.email 'email@example.com'
+git config --global user.name 'Automated Deployment'
 git init
 git checkout -b master
 git add -A
-git commit -m 'deploy' --author="Automated Deployment <email@address.com>"
 
 git push -f git@github.com:rwscarb/pdx-shootings.git master:gh-pages
 
