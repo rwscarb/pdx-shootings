@@ -128,7 +128,7 @@ export default {
     },
     computed: {
         allLayers() {
-            return [...filterableLayers, ...nonFilterableLayers];
+            return [...nonFilterableLayers, ...filterableLayers];
         },
         availableYears() {
             return _.map(this.yearOptions, 'key');
