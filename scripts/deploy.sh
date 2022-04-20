@@ -9,7 +9,6 @@ cd dist
 
 echo 'map.pdx-shootings.com' > CNAME
 
-git config --global init.defaultBranch master
 git config --global user.email 'email@example.com'
 git config --global user.name 'Automated Deployment'
 git init
