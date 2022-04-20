@@ -1,56 +1,48 @@
 <template>
     <main @keyup.up.ctrl="incrementYear"
-          @keyup.down.ctrl="decrementYear">
+          @keyup.down.ctrl="decrementYear"
+          @keyup.space.ctrl="togglePlayer">
         <div id="map"></div>
     </main>
     <nav>
-        <n-grid id="top_right_tools" cols="5">
-            <n-gi>
+        <n-space id="top_right_tools">
+            <div>
                 Heatmap <n-switch v-model:value="showHeatMap"/>
-            </n-gi>
-            <n-gi>
-                Year
-                <n-dropdown trigger="hover"
-                            :options="yearOptions"
-                            @select="e => year = e"
-                            size="large"
-                            id="select_year_dropdown">
-                    <n-button>{{ year }}</n-button>
-                </n-dropdown>
-            </n-gi>
-            <n-gi>
-                Date:
-                <div class="fixed_width_date">{{ startFilterDate.format('MMM Do') }}</div>
-                to
-                <div class="fixed_width_date">{{ endFilterDate.format('MMM Do') }}</div>
-            </n-gi>
-            <n-gi>
+            </div>
+            <div>
+                <n-date-picker type="daterange"
+                    :value="[startFilterDateMs, endFilterDateMs]"
+                    @update:value="applyDateRange"
+                    :is-date-disabled="isDateDisabled"
+                    format="E. MMM do yyyy"
+                />
+            </div>
+            <div style="min-width: 10em">
                 Shootings:
                 <n-number-animation
                         show-separator
                         :from="0"
                         :to="shootingsCount"
                         :duration="500"/>
-            </n-gi>
-            <n-gi id="nav_extra_icons">
+            </div>
+            <div id="nav_extra_icons">
                 <n-button @click="showDrawer = !showDrawer">
                     <icon size="24">
                         <filter-alt-outlined/>
                     </icon>
                 </n-button>
                 <about-link/>
-            </n-gi>
-        </n-grid>
+            </div>
+        </n-space>
     </nav>
     <footer>
         <n-slider id="day_slider_input"
                   range
                   v-model:value="value"
                   :format-tooltip="formatDateSliderTooltip"
-                  :step="1"
-                  :min="1"
-                  :max="365"
-                  :default-value="[1, 31]"
+                  :step="step"
+                  :min="startFilterDateMs"
+                  :max="endFilterDateMs"
         />
         <n-drawer v-model:show="showDrawer" placement="bottom">
             <n-drawer-content title="Filters">
@@ -81,7 +73,8 @@ import {
     NNumberAnimation,
     NSlider,
     NSwitch,
-    NSpace
+    NSpace,
+    NDatePicker,
 } from 'naive-ui'
 import mapboxgl from 'mapbox-gl'
 import { FilterAltOutlined } from '@vicons/material'
@@ -97,17 +90,22 @@ import barrelImgUrl from './assets/street-barrel.png'
 
 export default {
     data() {
+        const today = moment().startOf('day');
+        const start = today.clone().subtract(1, 'year').unix() * 1000;
+        const end = today.unix() * 1000;
         return {
             mapLoaded: false,
-            value: [1, 31],
-            year: null,
-            yearOptions: [],
+            value: [start, end],
+            dates: [start, end],
             showHeatMap: false,
             items: [],
             shootingsCount: 0,
             showDrawer: false,
             injuryOnly: false,
             showBarrels: false,
+            step: 1000 * 60 * 60 * 24,
+            playInterval: null,
+            playIntervalSpeed: 400,
         };
     },
     watch: {
@@ -122,39 +120,43 @@ export default {
         filter() {
             this.applyFilters();
         },
-        year() {
-            this.applyFilters();
-        },
     },
     computed: {
         allLayers() {
             return [...nonFilterableLayers, ...filterableLayers];
         },
         availableYears() {
-            return _.map(this.yearOptions, 'key');
+            // todo:
+            return [2019, 2020, 2021, 2022];
         },
         maxYear() {
-            return _.first(this.availableYears);
-        },
-        minYear() {
             return _.last(this.availableYears);
         },
+        minYear() {
+            return _.first(this.availableYears);
+        },
         startFilterDate() {
-            return moment.utc({year: this.year}).dayOfYear(this.value[0]);
+            return moment(this.dates[0]);
         },
         startFilterDateMs() {
             return this.startFilterDate.unix() * 1000;
         },
         endFilterDate() {
-            return moment.utc({year: this.year}).dayOfYear(this.value[1]).endOf('day');
+            return moment(this.dates[1]);
         },
         endFilterDateMs() {
             return this.endFilterDate.unix() * 1000;
         },
+        startSliderDate() {
+            return moment(this.value[0]);
+        },
+        endSliderDate() {
+            return moment(this.value[1]);
+        },
         dateFilter() {
             return ['all',
-                ['>=', ['get', 'date'], this.startFilterDateMs],
-                ['<=', ['get', 'date'], this.endFilterDateMs],
+                ['>=', ['get', 'date'], this.value[0]],
+                ['<=', ['get', 'date'], this.value[1]],
             ];
         },
         injuryFilter() {
@@ -166,22 +168,37 @@ export default {
         filteredFeatures() {
             return _.filter(this.sourceData.features, x => {
                 return _.every([
-                    x.properties.date >= this.startFilterDateMs && x.properties.date <= this.endFilterDateMs,
+                    x.properties.date >= this.value[0] && x.properties.date <= this.value[1],
                     this.injuryOnly ? x.properties.injury : true,
                 ]);
             });
         },
     },
     methods: {
-        incrementYear() {
-            if (this.year < this.maxYear) {
-                this.setYear(this.year + 1);
-            }
+        applyDateRange(value) {
+            this.dates = value;
+            this.value = value;
         },
-        decrementYear() {
-            if (this.year > this.minYear) {
-                this.setYear(this.year - 1);
+        isDateDisabled(value) {
+            const year = moment(value).year();
+            return year > this.maxYear || year < this.minYear;
+        },
+        togglePlayer() {
+            if (!_.isNull(this.playInterval)) {
+                clearInterval(this.playInterval);
+                this.playInterval = null;
+            } else {
+                this.playInterval = setInterval(() => {
+                    const nextStep = this.value[1] + this.step;
+                    if (nextStep < this.endFilterDateMs) {
+                        this.value = _.map(this.value, x => x + this.step);
+                    } else {
+                        clearInterval(this.playInterval);
+                        this.playInterval = null;
+                    }
+                }, this.playIntervalSpeed);
             }
+
         },
         async onMapLoaded() {
             this.sourceData = await (await fetch('/shootings.geojson')).json()
@@ -208,15 +225,8 @@ export default {
             await Promise.all(_.map(this.allLayers, layer => window.$mapbox.addLayer(layer)));
             this.mapLoaded = true;
         },
-        setYear(year) {
-            this.year = year;
-        },
-        getDateFromDayOfYear: function (value) {
-            return moment.utc({year: this.year}).dayOfYear(value);
-        },
         formatDateSliderTooltip(value) {
-            const date = this.getDateFromDayOfYear(value);
-            return date.format('MM/DD/YYYY');
+            return moment(value).format('MM/DD/YYYY');
         },
         applyFilters() {
             if (!this.mapLoaded) return
@@ -273,20 +283,8 @@ export default {
             .setLngLat([0, 0])
             .setHTML('<div id="popup"></div>')
             .addTo(window.$mapbox)
-
         this.popupVueInstance = createApp(Popup).mount('#popup');
-
         window.$popup.remove();
-
-        this.year = moment().year();
-        this.yearOptions = _.map(_.range(0, 4), x => {
-            const year = this.year - x;
-            return {
-                label: year,
-                key: year,
-            };
-        });
-        this.year--;
     },
     created() {
         this.popupVueInstance = null;
@@ -311,6 +309,7 @@ export default {
         NGrid,
         NGi,
         NSpace,
+        NDatePicker,
     },
 };
 </script>
