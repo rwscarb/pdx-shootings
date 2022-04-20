@@ -10,12 +10,31 @@
                 Heatmap <n-switch v-model:value="showHeatMap"/>
             </div>
             <div id="filter_date_picker">
-                <n-date-picker type="daterange"
-                    :value="[startFilterDateMs, endFilterDateMs]"
-                    @update:value="applyDateRange"
-                    :is-date-disabled="isDateDisabled"
-                    format="E. MMM do yyyy"
-                />
+                <div class="small_date_pickers">
+                    <n-date-picker size="small"
+                        :value="startFilterDateMs"
+                        @update:value="setStartFilterDate"
+                        :is-date-disabled="dateIsInvalid"
+                        format="E. MMM do yyyy"
+                    />
+                    <icon>
+                        <arrow-forward-filled/>
+                    </icon>
+                    <n-date-picker size="small"
+                        :value="endFilterDateMs"
+                        @update:value="setEndFilterDate"
+                        :is-date-disabled="dateIsInvalid"
+                        format="E. MMM do yyyy"
+                    />
+                </div>
+                <div class="range_picker">
+                    <n-date-picker type="daterange"
+                        :value="[startFilterDateMs, endFilterDateMs]"
+                        @update:value="applyDateRange"
+                        :is-date-disabled="dateIsInvalid"
+                        format="E. MMM do yyyy"
+                    />
+                </div>
             </div>
             <div id="top_nav_stats">
                 <div class="fixed_width_date">
@@ -80,7 +99,10 @@ import {
     NDatePicker,
 } from 'naive-ui'
 import mapboxgl from 'mapbox-gl'
-import { FilterAltOutlined } from '@vicons/material'
+import {
+    ArrowForwardFilled,
+    FilterAltOutlined,
+} from '@vicons/material'
 import { Icon } from '@vicons/utils'
 
 
@@ -178,11 +200,21 @@ export default {
         },
     },
     methods: {
+        setStartFilterDate(val) {
+            if (!this.dateIsInvalid(val)) {
+                this.dates[0] = val;
+            }
+        },
+        setEndFilterDate(val) {
+            if (!this.dateIsInvalid(val)) {
+                this.dates[1] = val;
+            }
+        },
         applyDateRange(value) {
             this.dates = value;
             this.value = value;
         },
-        isDateDisabled(value) {
+        dateIsInvalid(value) {
             const year = moment(value).year();
             return year > this.maxYear || year < this.minYear;
         },
@@ -305,7 +337,6 @@ export default {
         NButton,
         NSwitch,
         NNumberAnimation,
-        FilterAltOutlined,
         NDrawer,
         NDrawerContent,
         NCheckbox,
@@ -313,6 +344,8 @@ export default {
         NGi,
         NSpace,
         NDatePicker,
+        FilterAltOutlined,
+        ArrowForwardFilled,
     },
 };
 </script>
@@ -382,12 +415,25 @@ footer {
   min-width: 19em;
 }
 
+.small_date_pickers {
+    display: flex;
+    align-items: center;
+}
+
 @media only screen and (max-width: 600px) {
     #filter_date_picker {
         order: 3;
     }
     #top_nav_stats {
         order: 2;
+    }
+    .range_picker {
+        display: none;
+    }
+}
+@media only screen and (min-width: 600px) {
+    .small_date_pickers {
+        display: none;
     }
 }
 @media only screen and (max-width: 1000px) {
