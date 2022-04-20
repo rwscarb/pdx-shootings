@@ -30,5 +30,7 @@ export default {
 </script>
 
 <style scoped>
-
+input[type="date"] {
+    text-align: center;
+}
 </style>
