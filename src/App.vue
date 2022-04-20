@@ -20,7 +20,7 @@
                     </icon>
                     <small-datepicker
                         :value="endFilterDateIso"
-                        @update:value="setStartFilterDate"
+                        @update:value="setEndFilterDate"
                     />
                 </div>
                 <div class="range_picker">
