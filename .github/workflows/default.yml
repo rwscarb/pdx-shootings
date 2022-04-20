@@ -2,9 +2,11 @@ name: Fetch and Deploy
 
 on:
   push:
-    branches: [ $default-branch ]
+    branches:
+      - master
   pull_request:
-    branches: [ $default-branch ]
+    branches:
+      - master
   schedule:
       - cron: '0 0 * * *'
 
