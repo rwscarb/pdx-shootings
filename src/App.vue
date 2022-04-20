@@ -5,11 +5,11 @@
         <div id="map"></div>
     </main>
     <nav>
-        <n-space id="top_right_tools">
+        <div id="top_right_tools">
             <div>
                 Heatmap <n-switch v-model:value="showHeatMap"/>
             </div>
-            <div>
+            <div id="filter_date_picker">
                 <n-date-picker type="daterange"
                     :value="[startFilterDateMs, endFilterDateMs]"
                     @update:value="applyDateRange"
@@ -17,7 +17,10 @@
                     format="E. MMM do yyyy"
                 />
             </div>
-            <div style="min-width: 10em">
+            <div id="top_nav_stats">
+                <div class="fixed_width_date">
+                    Displaying: {{ startSliderDate.format('YYYY-MM-DD') }} to {{ endSliderDate.format('YYYY-MM-DD') }}
+                </div>
                 Shootings:
                 <n-number-animation
                         show-separator
@@ -33,7 +36,7 @@
                 </n-button>
                 <about-link/>
             </div>
-        </n-space>
+        </div>
     </nav>
     <footer>
         <n-slider id="day_slider_input"
@@ -353,6 +356,9 @@ footer {
 }
 
 #top_right_tools {
+  display: flex;
+  justify-content: center;
+  flex-flow: row wrap;
   background-color: white;
   padding: 5px 5px 5px 10px;
   align-items: center;
@@ -373,7 +379,20 @@ footer {
 }
 
 .fixed_width_date {
-  display: inline-block;
-  min-width: 4.3em;
+  min-width: 19em;
+}
+
+@media only screen and (max-width: 600px) {
+    #filter_date_picker {
+        order: 3;
+    }
+    #top_nav_stats {
+        order: 2;
+    }
+}
+@media only screen and (max-width: 1000px) {
+    #top_nav_stats {
+        order: 1;
+    }
 }
 </style>
