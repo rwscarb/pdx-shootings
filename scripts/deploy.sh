@@ -12,7 +12,7 @@ echo 'map.pdx-shootings.com' > CNAME
 git init
 git checkout -b master
 git add -A
-git commit -m 'deploy'
+git commit -m 'deploy' --author="Automated Deployment <email@address.com>"
 
 git push -f git@github.com:rwscarb/pdx-shootings.git master:gh-pages
 
