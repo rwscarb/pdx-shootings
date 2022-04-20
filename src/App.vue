@@ -13,23 +13,20 @@
                 <div class="small_date_pickers">
                     <small-datepicker
                         :value="startFilterDateIso"
-                        @update:value="setStartFilterDate"
-                    />
+                        @update:value="setStartFilterDate"/>
                     <icon>
                         <arrow-forward-filled/>
                     </icon>
                     <small-datepicker
                         :value="endFilterDateIso"
-                        @update:value="setEndFilterDate"
-                    />
+                        @update:value="setEndFilterDate"/>
                 </div>
                 <div class="range_picker">
                     <n-date-picker type="daterange"
                         :value="[startFilterDateMs, endFilterDateMs]"
                         @update:value="applyDateRange"
                         :is-date-disabled="dateIsInvalid"
-                        format="E. MMM do yyyy"
-                    />
+                        format="E. MMM do yyyy"/>
                 </div>
             </div>
             <div id="top_nav_stats">
@@ -60,8 +57,7 @@
                   :format-tooltip="formatDateSliderTooltip"
                   :step="step"
                   :min="startFilterDateMs"
-                  :max="endFilterDateMs"
-        />
+                  :max="endFilterDateMs"/>
         <n-drawer v-model:show="showDrawer" placement="bottom">
             <n-drawer-content title="Filters">
                 <n-space style="display: flex" vertical>
@@ -106,7 +102,13 @@ import Popup from './components/Popup.vue'
 import AboutLink from './components/AboutLink.vue'
 import SmallDatepicker from './components/SmallDatepicker.vue';
 
-import { filterableLayers, nonFilterableLayers, MAX_ZOOM, MIN_ZOOM } from './constants'
+import {
+    FILTERABLE_LAYERS,
+    NON_FILTERABLE_LAYERS,
+    MAX_ZOOM,
+    MIN_ZOOM,
+    SOURCES
+} from './constants'
 import barrelImgUrl from './assets/street-barrel.png'
 
 
@@ -146,7 +148,7 @@ export default {
     },
     computed: {
         allLayers() {
-            return [...nonFilterableLayers, ...filterableLayers];
+            return [...NON_FILTERABLE_LAYERS, ...FILTERABLE_LAYERS];
         },
         availableYears() {
             // todo:
@@ -228,6 +230,20 @@ export default {
             const year = moment(value).year();
             return year > this.maxYear || year < this.minYear;
         },
+        incrementYear() {
+            const nextYear = this.endFilterDate.year() + 1;
+            if (nextYear <= this.maxYear) {
+                const value = _.map(this.dates, x => moment(x).add(1, 'year').unix() * 1000)
+                this.applyDateRange(value);
+            }
+        },
+        decrementYear() {
+            const prevYear = this.startFilterDate.year() - 1;
+            if (prevYear >= this.minYear) {
+                const value = _.map(this.dates, x => moment(x).subtract(1, 'year').unix() * 1000)
+                this.applyDateRange(value);
+            }
+        },
         togglePlayer() {
             if (!_.isNull(this.playInterval)) {
                 clearInterval(this.playInterval);
@@ -277,7 +293,7 @@ export default {
             if (!this.mapLoaded) return
 
             const _this = this;
-            _.forEach(filterableLayers, layer => {
+            _.forEach(FILTERABLE_LAYERS, layer => {
                 window.$mapbox.setFilter(layer.id, _this.filter);
             });
             this.shootingsCount = this.filteredFeatures.length;
@@ -337,7 +353,7 @@ export default {
     },
     async unmounted() {
         await Promise.all(_.map(this.allLayers, layer => window.$mapbox.removeLayer(layer.id)));
-        await Promise.all(_.map(['shootings', 'barrels'], layer => window.$mapbox.removeSource(layer.id)));
+        await Promise.all(_.map(SOURCES, layer => window.$mapbox.removeSource(layer.id)));
     },
     components: {
         Icon,

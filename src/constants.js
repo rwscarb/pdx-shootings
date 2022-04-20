@@ -1,4 +1,4 @@
-export const heatmapLayer = {
+export const HEATMAP_LAYER = {
     id: 'shootings-heatmap',
     type: 'heatmap',
     source: 'shootings',
@@ -31,7 +31,7 @@ export const heatmapLayer = {
     },
 };
 
-export const circleLayer = {
+export const CIRCLE_LAYER = {
     id: 'shootings-circles',
     type: 'circle',
     source: 'shootings',
@@ -44,7 +44,7 @@ export const circleLayer = {
     }
 };
 
-export const circleLayerHover = {
+export const CIRCLE_LAYER_HOVER = {
     id: 'shootings-circles-hover',
     type: 'circle',
     source: 'shootings',
@@ -57,7 +57,7 @@ export const circleLayerHover = {
     }
 };
 
-export const barrelLayer = {
+export const BARREL_LAYER = {
     id: 'barrels',
     type: 'symbol',
     source: 'barrels',
@@ -80,7 +80,8 @@ export const barrelLayer = {
     }
 };
 
-export const filterableLayers = [heatmapLayer, circleLayer, circleLayerHover];
-export const nonFilterableLayers = [barrelLayer];
+export const FILTERABLE_LAYERS = [HEATMAP_LAYER, CIRCLE_LAYER, CIRCLE_LAYER_HOVER];
+export const NON_FILTERABLE_LAYERS = [BARREL_LAYER];
+export const SOURCES = [{id: 'shootings'}, {id: 'barrels'}];
 export const MIN_ZOOM = 10;
 export const MAX_ZOOM = 15.66;
