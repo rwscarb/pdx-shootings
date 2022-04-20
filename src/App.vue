@@ -127,6 +127,9 @@ export default {
         },
     },
     computed: {
+        allLayers() {
+            return [...filterableLayers, ...nonFilterableLayers];
+        },
         availableYears() {
             return _.map(this.yearOptions, 'key');
         },
@@ -202,7 +205,7 @@ export default {
                     window.$mapbox.addImage('barrel', image);
                 },
             );
-            await Promise.all(_.map([...filterableLayers, ...nonFilterableLayers], layer => window.$mapbox.addLayer(layer)));
+            await Promise.all(_.map(this.allLayers, layer => window.$mapbox.addLayer(layer)));
             this.mapLoaded = true;
         },
         setYear(year) {
@@ -288,6 +291,10 @@ export default {
     created() {
         this.popupVueInstance = null;
         this.sourceData = [];
+    },
+    async unmounted() {
+        await Promise.all(_.map(this.allLayers, layer => window.$mapbox.removeLayer(layer.id)));
+        await Promise.all(_.map(['shootings', 'barrels'], layer => window.$mapbox.removeSource(layer.id)));
     },
     components: {
         Icon,

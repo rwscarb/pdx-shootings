@@ -6,16 +6,6 @@ export const heatmapLayer = {
         visibility: 'none'
     },
     paint: {
-        // increase weight as diameter breast height increases
-        'heatmap-weight': [
-            'interpolate',
-            ['linear'],
-            ['get', 'casings'],
-            0,
-            0,
-            6,
-            1,
-        ],
         // increase intensity as zoom level increases
         'heatmap-intensity': {
             stops: [
@@ -23,22 +13,6 @@ export const heatmapLayer = {
                 [15, 3],
             ],
         },
-        // assign color values be applied to points depending on their density
-        'heatmap-color': [
-            'interpolate',
-            ['linear'],
-            ['heatmap-density'],
-            0,
-            'rgba(236,222,239,0)',
-            0.2,
-            'rgb(206,85,0)',
-            0.4,
-            'rgb(255,106,27)',
-            0.6,
-            'rgb(211,114,227)',
-            0.8,
-            'rgb(158,234,130)',
-        ],
         // increase radius as zoom increases
         'heatmap-radius': {
             stops: [
@@ -106,7 +80,7 @@ export const barrelLayer = {
     }
 };
 
-export const filterableLayers = [circleLayer, circleLayerHover, heatmapLayer];
+export const filterableLayers = [heatmapLayer, circleLayer, circleLayerHover];
 export const nonFilterableLayers = [barrelLayer];
-export const MIN_ZOOM = 11.40;
+export const MIN_ZOOM = 10;
 export const MAX_ZOOM = 15.66;
