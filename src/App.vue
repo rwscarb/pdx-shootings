@@ -1,6 +1,7 @@
 <template>
-    <main @keyup.up.ctrl="incrementYear"
-          @keyup.down.ctrl="decrementYear"
+    <main @keydown.ctrl.up.exact="incrementYear"
+          @keydown.ctrl.down.exact="decrementYear"
+          @keydown="handleKeyDown"
           @keyup.space="togglePlayer">
         <div id="map"></div>
     </main>
@@ -104,7 +105,8 @@ import {
     NON_FILTERABLE_LAYERS,
     MAX_ZOOM,
     MIN_ZOOM,
-    SOURCES
+    SOURCES,
+    DAY_MS,
 } from './constants'
 import barrelImgUrl from './assets/street-barrel.png'
 
@@ -125,19 +127,17 @@ export default {
             showDrawer: false,
             injuryOnly: false,
             showBarrels: false,
-            step: 1000 * 60 * 60 * 24,
+            step: DAY_MS,
             playInterval: null,
             playIntervalSpeed: 400,
         };
     },
     watch: {
         showHeatMap(newVal) {
-            const visibility = newVal ? 'visible' : 'none';
-            window.$mapbox.setLayoutProperty('shootings-heatmap', 'visibility', visibility);
+            this.setLayerVisibility('shootings-heatmap', newVal);
         },
         showBarrels(newVal) {
-            const visibility = newVal ? 'visible' : 'none';
-            window.$mapbox.setLayoutProperty('barrels', 'visibility', visibility);
+            this.setLayerVisibility('barrels', newVal);
         },
         filter() {
             this.applyFilters();
@@ -201,8 +201,57 @@ export default {
                 ]);
             });
         },
+        isPlaying() {
+            return !_.isNull(this.playInterval);
+        },
     },
     methods: {
+        setLayerVisibility(layerId, isVisible) {
+            window.$mapbox.setLayoutProperty(layerId, 'visibility', isVisible ? 'visible' : 'none');
+        },
+        handleKeyDown($e) {
+            switch ($e.key) {
+                case 'z':
+                    this.setPlayInterval(this.playIntervalSpeed + 50);
+                    break;
+                case 'x':
+                    this.setPlayInterval(this.playIntervalSpeed - 50);
+                    break;
+                case 'd':
+                    this.setEndSlider('day');
+                    break;
+                case 'w':
+                    this.setEndSlider('week');
+                    break;
+                case 'm':
+                    this.setEndSlider('month');
+                    break;
+                case 'q':
+                    this.setEndSlider(moment.duration(3, 'months'));
+                    break;
+                case 'y':
+                    this.setEndSlider('year');
+                    break;
+            }
+        },
+        setPlayInterval(ms) {
+            const playing = this.isPlaying;
+            if (playing) {
+                this.stopPlayer();
+            }
+            this.playIntervalSpeed = ms;
+            if (playing) {
+                this.startPlayer();
+            }
+        },
+        setEndSlider(duration) {
+            const newSliderEndDate = moment(this.value[0]).add(1, duration);
+            if (newSliderEndDate.isAfter(this.endFilterDate)) {
+                this.value[1] = this.endFilterDateMs;
+            } else {
+                this.value[1] = newSliderEndDate.unix() * 1000;
+            }
+        },
         setStartFilterDate(value) {
             const date = moment(value, 'YYYY-MM-DD');
             if (this.dateIsInvalid(date)) {
@@ -242,21 +291,27 @@ export default {
             }
         },
         togglePlayer() {
-            if (!_.isNull(this.playInterval)) {
-                clearInterval(this.playInterval);
-                this.playInterval = null;
+            if (this.isPlaying) {
+                this.stopPlayer();
             } else {
-                this.playInterval = setInterval(() => {
-                    const nextStep = this.value[1] + this.step;
-                    if (nextStep < this.endFilterDateMs) {
-                        this.value = _.map(this.value, x => x + this.step);
-                    } else {
-                        clearInterval(this.playInterval);
-                        this.playInterval = null;
-                    }
-                }, this.playIntervalSpeed);
+                this.startPlayer();
             }
-
+        },
+        stopPlayer() {
+            clearInterval(this.playInterval);
+            this.playInterval = null;
+        },
+        startPlayer() {
+            const _this = this;
+            this.playInterval = setInterval(() => {
+                const nextStep = _this.value[1] + _this.step;
+                if (nextStep < _this.endFilterDateMs) {
+                    _this.value = _.map(_this.value, x => x + _this.step);
+                } else {
+                    clearInterval(_this.playInterval);
+                    _this.playInterval = null;
+                }
+            }, this.playIntervalSpeed);
         },
         async onMapLoaded() {
             this.sourceData = await (await fetch('/shootings.geojson')).json()

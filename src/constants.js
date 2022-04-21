@@ -85,3 +85,4 @@ export const NON_FILTERABLE_LAYERS = [BARREL_LAYER];
 export const SOURCES = [{id: 'shootings'}, {id: 'barrels'}];
 export const MIN_ZOOM = 10;
 export const MAX_ZOOM = 15.66;
+export const DAY_MS = 1000 * 60 * 60 * 24;
