@@ -1,7 +1,7 @@
 <template>
     <main @keyup.up.ctrl="incrementYear"
           @keyup.down.ctrl="decrementYear"
-          @keyup.space.ctrl="togglePlayer">
+          @keyup.space="togglePlayer">
         <div id="map"></div>
     </main>
     <nav>
@@ -30,15 +30,12 @@
                 </div>
             </div>
             <div id="top_nav_stats">
-                <div class="fixed_width_date">
+                <div>
                     Displaying: {{ startSliderDate.format('YYYY-MM-DD') }} to {{ endSliderDate.format('YYYY-MM-DD') }}
                 </div>
-                Shootings:
-                <n-number-animation
-                        show-separator
-                        :from="0"
-                        :to="shootingsCount"
-                        :duration="500"/>
+                <div>
+                    Shootings: {{ shootingsCount }}
+                </div>
             </div>
             <div id="nav_extra_icons">
                 <n-button @click="showDrawer = !showDrawer">
@@ -438,13 +435,10 @@ footer {
   }
 }
 
-.fixed_width_date {
-  min-width: 19em;
-}
-
 .small_date_pickers {
     display: flex;
     align-items: center;
+    margin: .5em;
 }
 
 @media only screen and (max-width: 600px) {
