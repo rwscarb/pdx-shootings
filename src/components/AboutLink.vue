@@ -23,9 +23,9 @@
                 </p>
             </n-card>
         </n-modal>
-        <Icon size="24">
+        <icon size="24">
             <info-outlined/>
-        </Icon>
+        </icon>
     </n-button>
 </template>
 <script>

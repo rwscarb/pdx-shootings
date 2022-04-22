@@ -50,12 +50,50 @@
     </nav>
     <footer>
         <n-slider id="day_slider_input"
-                  range
-                  v-model:value="value"
-                  :format-tooltip="formatDateSliderTooltip"
-                  :step="step"
-                  :min="startFilterDateMs"
-                  :max="endFilterDateMs"/>
+              range
+              v-model:value="value"
+              :format-tooltip="formatDateSliderTooltip"
+              :step="step"
+              :min="startFilterDateMs"
+              :max="endFilterDateMs"/>
+        <n-space class="player">
+            <n-button text @click="moveToFilterStart">
+                <template #icon>
+                    <icon>
+                        <skip-previous-outlined/>
+                    </icon>
+                </template>
+            </n-button>
+            <n-button text @click="decrementPlay">
+                <template #icon>
+                    <icon>
+                        <keyboard-double-arrow-left-outlined/>
+                    </icon>
+                </template>
+            </n-button>
+            <n-button text circle @click="togglePlayer">
+                <template #icon>
+                    <icon>
+                        <pause-circle-outline-filled v-if="isPlaying"/>
+                        <play-circle-outline-filled v-else/>
+                    </icon>
+                </template>
+            </n-button>
+            <n-button text @click="incrementPlay">
+                <template #icon>
+                    <icon>
+                        <keyboard-double-arrow-right-outlined/>
+                    </icon>
+                </template>
+            </n-button>
+            <n-button text @click="moveToFilterEnd">
+                <template #icon>
+                    <icon>
+                        <skip-next-outlined/>
+                    </icon>
+                </template>
+            </n-button>
+        </n-space>
         <n-drawer v-model:show="showDrawer" placement="bottom">
             <n-drawer-content title="Filters">
                 <n-space style="display: flex" vertical>
@@ -87,11 +125,18 @@ import {
     NSwitch,
     NSpace,
     NDatePicker,
+    NButtonGroup,
 } from 'naive-ui'
 import mapboxgl from 'mapbox-gl'
 import {
     ArrowForwardFilled,
     FilterAltOutlined,
+    PlayCircleOutlineFilled,
+    PauseCircleOutlineFilled,
+    KeyboardDoubleArrowLeftOutlined,
+    KeyboardDoubleArrowRightOutlined,
+    SkipPreviousOutlined,
+    SkipNextOutlined,
 } from '@vicons/material'
 import { Icon } from '@vicons/utils'
 
@@ -142,6 +187,12 @@ export default {
         filter() {
             this.applyFilters();
         },
+        value(newVal) {
+            const [start, end] = newVal;
+            if (start > end) {
+                this.value = [start, start];
+            }
+        },
     },
     computed: {
         allLayers() {
@@ -176,15 +227,24 @@ export default {
             return this.endFilterDate.format('YYYY-MM-DD');
         },
         startSliderDate() {
-            return moment(this.value[0]);
+            return moment(this.value[0]).startOf('day');
+        },
+        startSliderMs() {
+            return this.startSliderDate.unix() * 1000;
         },
         endSliderDate() {
-            return moment(this.value[1]);
+            return moment(this.value[1]).endOf('day');
+        },
+        endSliderMs() {
+            return this.endSliderDate.unix() * 1000;
+        },
+        sliderDistanceMs() {
+            return this.value[1] - this.value[0];
         },
         dateFilter() {
             return ['all',
-                ['>=', ['get', 'date'], this.value[0]],
-                ['<=', ['get', 'date'], this.value[1]],
+                ['>=', ['get', 'date'], this.startSliderMs],
+                ['<=', ['get', 'date'], this.endSliderMs],
             ];
         },
         injuryFilter() {
@@ -196,7 +256,7 @@ export default {
         filteredFeatures() {
             return _.filter(this.sourceData.features, x => {
                 return _.every([
-                    x.properties.date >= this.value[0] && x.properties.date <= this.value[1],
+                    x.properties.date >= this.startSliderMs && x.properties.date <= this.endSliderMs,
                     this.injuryOnly ? x.properties.injury : true,
                 ]);
             });
@@ -209,13 +269,25 @@ export default {
         setLayerVisibility(layerId, isVisible) {
             window.$mapbox.setLayoutProperty(layerId, 'visibility', isVisible ? 'visible' : 'none');
         },
+        incrementPlay() {
+            this.setPlayInterval(this.playIntervalSpeed - 50);
+        },
+        decrementPlay() {
+            this.setPlayInterval(this.playIntervalSpeed + 50);
+        },
+        moveToFilterStart() {
+            this.value = [this.startFilterDateMs, this.startFilterDateMs + this.sliderDistanceMs];
+        },
+        moveToFilterEnd() {
+            this.value = [this.endFilterDateMs - this.sliderDistanceMs, this.endFilterDateMs];
+        },
         handleKeyDown($e) {
             switch ($e.key) {
                 case 'z':
-                    this.setPlayInterval(this.playIntervalSpeed + 50);
+                    this.decrementPlay();
                     break;
                 case 'x':
-                    this.setPlayInterval(this.playIntervalSpeed - 50);
+                    this.incrementPlay();
                     break;
                 case 'd':
                     this.setEndSlider('day');
@@ -239,7 +311,7 @@ export default {
             if (playing) {
                 this.stopPlayer();
             }
-            this.playIntervalSpeed = ms;
+            this.playIntervalSpeed = _.max([ms, 0]);
             if (playing) {
                 this.startPlayer();
             }
@@ -311,6 +383,7 @@ export default {
                 if (nextStep < _this.endFilterDateMs) {
                     _this.value = _.map(_this.value, x => x + _this.step);
                 } else {
+                    _this.value[1] = this.endFilterDateMs;
                     clearInterval(_this.playInterval);
                     _this.playInterval = null;
                 }
@@ -411,8 +484,8 @@ export default {
         await Promise.all(_.map(SOURCES, layer => window.$mapbox.removeSource(layer.id)));
     },
     components: {
-        Icon,
         AboutLink,
+        Icon,
         NSlider,
         NDropdown,
         NButton,
@@ -425,8 +498,15 @@ export default {
         NGi,
         NSpace,
         NDatePicker,
+        NButtonGroup,
         FilterAltOutlined,
         ArrowForwardFilled,
+        PlayCircleOutlineFilled,
+        PauseCircleOutlineFilled,
+        KeyboardDoubleArrowLeftOutlined,
+        KeyboardDoubleArrowRightOutlined,
+        SkipPreviousOutlined,
+        SkipNextOutlined,
         SmallDatepicker,
     },
 };
@@ -451,6 +531,9 @@ nav {
 footer {
   display: flex;
   position: fixed;
+  flex-flow: column;
+  justify-content: space-evenly;
+  align-items: center;
   bottom: 0;
   left: 0;
   width: 100vw;
@@ -458,7 +541,7 @@ footer {
 }
 
 #day_slider_input {
-  margin: 0 5em;
+  max-width: 80%;
 }
 
 #select_year_dropdown {
@@ -497,6 +580,15 @@ footer {
     display: flex;
     align-items: center;
     margin: .5em;
+}
+
+.player {
+  background-color: white;
+  display: flex;
+  padding: .24em;
+  > div {
+    display: flex;
+  }
 }
 
 @media only screen and (max-width: 600px) {
