@@ -591,6 +591,10 @@ footer {
   }
 }
 
+#top_nav_stats {
+  min-width: 18em;
+}
+
 @media only screen and (max-width: 600px) {
     #filter_date_picker {
         order: 3;
