@@ -1,116 +1,120 @@
 <template>
-    <main @keydown.ctrl.up.exact="incrementYear"
-          @keydown.ctrl.down.exact="decrementYear"
-          @keydown="handleKeyDown"
-          @keyup.space="togglePlayer">
-        <div id="map"></div>
-    </main>
-    <nav>
-        <div id="top_right_tools">
-            <div>
-                Heatmap <n-switch v-model:value="showHeatMap"/>
-            </div>
-            <div id="filter_date_picker">
-                <div class="small_date_pickers">
-                    <small-datepicker
-                        :value="startFilterDateIso"
-                        @update:value="setStartFilterDate"/>
-                    <icon>
-                        <arrow-forward-filled/>
-                    </icon>
-                    <small-datepicker
-                        :value="endFilterDateIso"
-                        @update:value="setEndFilterDate"/>
-                </div>
-                <div class="range_picker">
-                    <n-date-picker type="daterange"
-                        :value="[startFilterDateMs, endFilterDateMs]"
-                        @update:value="applyDateRange"
-                        :is-date-disabled="dateIsInvalid"
-                        format="E. MMM do yyyy"/>
-                </div>
-            </div>
-            <div id="top_nav_stats">
+    <n-config-provider :theme="theme">
+        <main @keydown.ctrl.up.exact="incrementYear"
+              @keydown.ctrl.down.exact="decrementYear"
+              @keydown="handleKeyDown"
+              @keyup.space="togglePlayer">
+            <div id="map"></div>
+        </main>
+        <nav>
+            <div id="top_right_tools">
                 <div>
-                    Displaying: {{ startSliderDate.format('YYYY-MM-DD') }} to {{ endSliderDate.format('YYYY-MM-DD') }}
+                    Heatmap <n-switch v-model:value="showHeatMap"/>
                 </div>
-                <div>
-                    Shootings: {{ shootingsCount }}
+                <div id="filter_date_picker">
+                    <div class="small_date_pickers">
+                        <small-datepicker
+                                :value="startFilterDateIso"
+                                @update:value="setStartFilterDate"/>
+                        <icon>
+                            <arrow-forward-filled/>
+                        </icon>
+                        <small-datepicker
+                                :value="endFilterDateIso"
+                                @update:value="setEndFilterDate"/>
+                    </div>
+                    <div class="range_picker">
+                        <n-date-picker type="daterange"
+                                       :value="[startFilterDateMs, endFilterDateMs]"
+                                       @update:value="applyDateRange"
+                                       :is-date-disabled="dateIsInvalid"
+                                       format="E. MMM do yyyy"/>
+                    </div>
+                </div>
+                <div id="top_nav_stats">
+                    <div>
+                        Displaying: {{ startSliderDate.format('YYYY-MM-DD') }} to {{ endSliderDate.format('YYYY-MM-DD') }}
+                    </div>
+                    <div>
+                        Shootings: {{ shootingsCount }}
+                    </div>
+                </div>
+                <div id="nav_extra_icons">
+                    <n-button @click="showDrawer = !showDrawer">
+                        <icon size="24">
+                            <filter-alt-outlined/>
+                        </icon>
+                    </n-button>
+                    <about-link/>
                 </div>
             </div>
-            <div id="nav_extra_icons">
-                <n-button @click="showDrawer = !showDrawer">
-                    <icon size="24">
-                        <filter-alt-outlined/>
-                    </icon>
+        </nav>
+        <footer>
+            <n-slider id="day_slider_input"
+                      range
+                      v-model:value="value"
+                      :format-tooltip="formatDateSliderTooltip"
+                      :step="step"
+                      :min="startFilterDateMs"
+                      :max="endFilterDateMs"/>
+            <n-space class="player">
+                <n-button text @click="moveToFilterStart">
+                    <template #icon>
+                        <icon size="32">
+                            <skip-previous-outlined/>
+                        </icon>
+                    </template>
                 </n-button>
-                <about-link/>
-            </div>
-        </div>
-    </nav>
-    <footer>
-        <n-slider id="day_slider_input"
-              range
-              v-model:value="value"
-              :format-tooltip="formatDateSliderTooltip"
-              :step="step"
-              :min="startFilterDateMs"
-              :max="endFilterDateMs"/>
-        <n-space class="player">
-            <n-button text @click="moveToFilterStart">
-                <template #icon>
-                    <icon>
-                        <skip-previous-outlined/>
-                    </icon>
-                </template>
-            </n-button>
-            <n-button text @click="decrementPlay">
-                <template #icon>
-                    <icon>
-                        <keyboard-double-arrow-left-outlined/>
-                    </icon>
-                </template>
-            </n-button>
-            <n-button text circle @click="togglePlayer">
-                <template #icon>
-                    <icon>
-                        <pause-circle-outline-filled v-if="isPlaying"/>
-                        <play-circle-outline-filled v-else/>
-                    </icon>
-                </template>
-            </n-button>
-            <n-button text @click="incrementPlay">
-                <template #icon>
-                    <icon>
-                        <keyboard-double-arrow-right-outlined/>
-                    </icon>
-                </template>
-            </n-button>
-            <n-button text @click="moveToFilterEnd">
-                <template #icon>
-                    <icon>
-                        <skip-next-outlined/>
-                    </icon>
-                </template>
-            </n-button>
-        </n-space>
-        <n-drawer v-model:show="showDrawer" placement="bottom">
-            <n-drawer-content title="Filters">
-                <n-space style="display: flex" vertical>
-                    <n-checkbox v-model:checked="injuryOnly">
-                        Injury Only
-                    </n-checkbox>
-                    <n-checkbox v-model:checked="showBarrels" title="Most recently fetched and marked active">
-                        Traffic Barrels
-                    </n-checkbox>
-                </n-space>
-            </n-drawer-content>
-        </n-drawer>
-    </footer>
+                <n-button text @click="decrementPlay">
+                    <template #icon>
+                        <icon size="32">
+                            <keyboard-double-arrow-left-outlined/>
+                        </icon>
+                    </template>
+                </n-button>
+                <n-button text circle @click="togglePlayer">
+                    <template #icon>
+                        <icon size="32">
+                            <pause-circle-outline-filled v-if="isPlaying"/>
+                            <play-circle-outline-filled v-else/>
+                        </icon>
+                    </template>
+                </n-button>
+                <n-button text @click="incrementPlay">
+                    <template #icon>
+                        <icon size="32">
+                            <keyboard-double-arrow-right-outlined/>
+                        </icon>
+                    </template>
+                </n-button>
+                <n-button text @click="moveToFilterEnd">
+                    <template #icon>
+                        <icon size="32">
+                            <skip-next-outlined/>
+                        </icon>
+                    </template>
+                </n-button>
+            </n-space>
+            <n-drawer v-model:show="showDrawer" placement="bottom">
+                <n-drawer-content title="Filters">
+                    <n-space style="display: flex" vertical>
+                        <n-checkbox v-model:checked="injuryOnly">
+                            Injury Only
+                        </n-checkbox>
+                        <n-checkbox v-model:checked="showBarrels" title="Most recently fetched and marked active">
+                            Traffic Barrels
+                        </n-checkbox>
+                    </n-space>
+                </n-drawer-content>
+            </n-drawer>
+        </footer>
+    </n-config-provider>
 </template>
 
 <script>
 import 'mapbox-gl/dist/mapbox-gl.css'
+import 'vfonts/Lato.css'
+import 'vfonts/FiraCode.css'
 import _ from 'lodash'
 import { createApp } from 'vue'
 import moment from 'moment'
@@ -119,13 +123,17 @@ import {
     NCheckbox,
     NDrawer,
     NDrawerContent,
-    NDropdown, NGi, NGrid,
+    NDropdown,
+    NGi,
+    NGrid,
+    NConfigProvider,
     NNumberAnimation,
     NSlider,
     NSwitch,
     NSpace,
     NDatePicker,
     NButtonGroup,
+    darkTheme,
 } from 'naive-ui'
 import mapboxgl from 'mapbox-gl'
 import {
@@ -175,6 +183,7 @@ export default {
             step: DAY_MS,
             playInterval: null,
             playIntervalSpeed: 400,
+            theme: darkTheme,
         };
     },
     watch: {
@@ -490,6 +499,7 @@ export default {
         NDropdown,
         NButton,
         NSwitch,
+        NConfigProvider,
         NNumberAnimation,
         NDrawer,
         NDrawerContent,
@@ -537,7 +547,8 @@ footer {
   bottom: 0;
   left: 0;
   width: 100vw;
-  height: 10%;
+  height: 13%;
+  padding: 10px;
 }
 
 #day_slider_input {
@@ -557,11 +568,11 @@ footer {
   display: flex;
   justify-content: center;
   flex-flow: row wrap;
-  background-color: white;
   padding: 5px 5px 5px 10px;
   align-items: center;
   justify-items: center;
   text-align: center;
+  color: white;
 
   > div {
     margin: 0 .5em;
@@ -583,7 +594,6 @@ footer {
 }
 
 .player {
-  background-color: white;
   display: flex;
   padding: .24em;
   > div {
