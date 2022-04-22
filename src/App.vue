@@ -270,7 +270,10 @@ export default {
         },
         applyDateRange(value) {
             this.dates = value;
-            this.value = value;
+            const [start, end]  = this.value;
+            if (start < this.dates[0] || end > this.dates[1]) {
+                this.value =  [...this.dates];
+            }
         },
         dateIsInvalid(value) {
             const year = moment(value).year();
