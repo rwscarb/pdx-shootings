@@ -573,6 +573,7 @@ footer {
   justify-items: center;
   text-align: center;
   color: white;
+  backdrop-filter: blur(2px);
 
   > div {
     margin: 0 .5em;
@@ -596,6 +597,7 @@ footer {
 .player {
   display: flex;
   padding: .24em;
+  backdrop-filter: blur(1px);
   > div {
     display: flex;
   }
