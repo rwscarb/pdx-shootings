@@ -14,7 +14,7 @@
                 <div id="filter_date_picker">
                     <div class="small_date_pickers">
                         <small-datepicker @update:value="setStartFilterDate" :value="startFilterDate.format('YYYY-MM-DD')"/>
-                        <icon>
+                        <icon style="margin: 0 1em">
                             <arrow-forward-filled/>
                         </icon>
                         <small-datepicker @update:value="setEndFilterDate" :value="endFilterDate.format('YYYY-MM-DD')"/>
