@@ -167,7 +167,7 @@ import barrelImgUrl from './assets/street-barrel.png'
 export default {
     name: 'App',
     data() {
-        const today = moment().startOf('day');
+        const today = moment.utc().startOf('day');
         const start = today.clone().subtract(1, 'year').unix() * 1000;
         const end = today.unix() * 1000;
         return {
@@ -199,7 +199,7 @@ export default {
         value(newVal) {
             const [start, end] = newVal;
             if (start > end) {
-                this.value = [start, start];
+                this.value = [end, end];
             }
         },
     },
@@ -424,7 +424,7 @@ export default {
             this.mapLoaded = true;
         },
         formatDateSliderTooltip(value) {
-            return moment(value).format('MM/DD/YYYY');
+            return moment.utc(value).format('MM/DD/YYYY');
         },
         applyFilters() {
             if (!this.mapLoaded) return
