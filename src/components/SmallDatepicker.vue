@@ -1,5 +1,5 @@
 <template>
-    <input type="date" ref="input" @input="checkAndEmit">
+    <input type="date" ref="input" @blur="checkAndEmit">
 </template>
 
 <script>

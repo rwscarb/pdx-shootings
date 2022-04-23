@@ -13,15 +13,11 @@
                 </div>
                 <div id="filter_date_picker">
                     <div class="small_date_pickers">
-                        <small-datepicker
-                                :value="startFilterDateIso"
-                                @update:value="setStartFilterDate"/>
+                        <small-datepicker @update:value="setStartFilterDate" :value="startFilterDate.format('YYYY-MM-DD')"/>
                         <icon>
                             <arrow-forward-filled/>
                         </icon>
-                        <small-datepicker
-                                :value="endFilterDateIso"
-                                @update:value="setEndFilterDate"/>
+                        <small-datepicker @update:value="setEndFilterDate" :value="endFilterDate.format('YYYY-MM-DD')"/>
                     </div>
                     <div class="range_picker">
                         <n-date-picker type="daterange"
@@ -223,17 +219,11 @@ export default {
         startFilterDateMs() {
             return this.startFilterDate.unix() * 1000;
         },
-        startFilterDateIso() {
-            return this.startFilterDate.format('YYYY-MM-DD');
-        },
         endFilterDate() {
             return this.utcDates[1];
         },
         endFilterDateMs() {
             return this.endFilterDate.unix() * 1000;
-        },
-        endFilterDateIso() {
-            return this.endFilterDate.format('YYYY-MM-DD');
         },
         startSliderDate() {
             return moment.utc(this.value[0]);
@@ -337,7 +327,7 @@ export default {
             }
         },
         setStartFilterDate(value) {
-            const date = moment.utc(value, 'YYYY-MM-DD');
+            const date = moment(value, 'YYYY-MM-DD');
             if (this.dateIsInvalid(date)) {
                 return;
             }
@@ -345,21 +335,18 @@ export default {
             this.applyDateRange(newRange);
         },
         setEndFilterDate(value) {
-            const date = moment.utc(value, 'YYYY-MM-DD');
+            const date = moment(value, 'YYYY-MM-DD');
             if (this.dateIsInvalid(date)) {
                 return;
             }
             const newRange = [this.pickerDates[0], date.unix() * 1000];
             this.applyDateRange(newRange);
         },
-        localToUtc(ms) {
-            return moment(ms).utc(true).unix() * 1000
-        },
         applyDateRange(value) {
             this.pickerDates = value;
             const [start, end]  = this.value;
             if (start < this.pickerDates[0] || end > this.pickerDates[1]) {
-                this.value =  [...this.utcDates];
+                this.value =  _.map(this.utcDates, x => x.unix() * 1000);
             }
         },
         dateIsInvalid(value) {
