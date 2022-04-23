@@ -25,7 +25,7 @@
                     </div>
                     <div class="range_picker">
                         <n-date-picker type="daterange"
-                                       :value="[startFilterDateMs, endFilterDateMs]"
+                                       :value="pickerDates"
                                        @update:value="applyDateRange"
                                        :is-date-disabled="dateIsInvalid"
                                        format="E. MMM do yyyy"/>
@@ -167,13 +167,13 @@ import barrelImgUrl from './assets/street-barrel.png'
 export default {
     name: 'App',
     data() {
-        const today = moment.utc().startOf('day');
+        const today = moment().startOf('day');
         const start = today.clone().subtract(1, 'year').unix() * 1000;
         const end = today.unix() * 1000;
         return {
             mapLoaded: false,
             value: [start, end],
-            dates: [start, end],
+            pickerDates: [start, end],
             showHeatMap: false,
             items: [],
             shootingsCount: 0,
@@ -218,7 +218,7 @@ export default {
             return _.first(this.availableYears);
         },
         startFilterDate() {
-            return moment(this.dates[0]);
+            return this.utcDates[0];
         },
         startFilterDateMs() {
             return this.startFilterDate.unix() * 1000;
@@ -227,7 +227,7 @@ export default {
             return this.startFilterDate.format('YYYY-MM-DD');
         },
         endFilterDate() {
-            return moment(this.dates[1]);
+            return this.utcDates[1];
         },
         endFilterDateMs() {
             return this.endFilterDate.unix() * 1000;
@@ -272,6 +272,9 @@ export default {
         },
         isPlaying() {
             return !_.isNull(this.playInterval);
+        },
+        utcDates() {
+            return _.map(this.pickerDates, x => moment(x).utc(true));
         },
     },
     methods: {
@@ -326,7 +329,7 @@ export default {
             }
         },
         setEndSlider(duration) {
-            const newSliderEndDate = moment(this.value[0]).add(1, duration);
+            const newSliderEndDate = moment.utc(this.value[0]).add(1, duration);
             if (newSliderEndDate.isAfter(this.endFilterDate)) {
                 this.value[1] = this.endFilterDateMs;
             } else {
@@ -334,43 +337,46 @@ export default {
             }
         },
         setStartFilterDate(value) {
-            const date = moment(value, 'YYYY-MM-DD');
+            const date = moment.utc(value, 'YYYY-MM-DD');
             if (this.dateIsInvalid(date)) {
                 return;
             }
-            const newRange = [date.unix() * 1000, this.dates[1]];
+            const newRange = [date.unix() * 1000, this.pickerDates[1]];
             this.applyDateRange(newRange);
         },
         setEndFilterDate(value) {
-            const date = moment(value, 'YYYY-MM-DD');
+            const date = moment.utc(value, 'YYYY-MM-DD');
             if (this.dateIsInvalid(date)) {
                 return;
             }
-            const newRange = [this.dates[0], date.unix() * 1000];
+            const newRange = [this.pickerDates[0], date.unix() * 1000];
             this.applyDateRange(newRange);
         },
+        localToUtc(ms) {
+            return moment(ms).utc(true).unix() * 1000
+        },
         applyDateRange(value) {
-            this.dates = value;
+            this.pickerDates = value;
             const [start, end]  = this.value;
-            if (start < this.dates[0] || end > this.dates[1]) {
-                this.value =  [...this.dates];
+            if (start < this.pickerDates[0] || end > this.pickerDates[1]) {
+                this.value =  [...this.utcDates];
             }
         },
         dateIsInvalid(value) {
-            const year = moment(value).year();
+            const year = moment.utc(value).year();
             return year > this.maxYear || year < this.minYear;
         },
         incrementYear() {
             const nextYear = this.endFilterDate.year() + 1;
             if (nextYear <= this.maxYear) {
-                const value = _.map(this.dates, x => moment(x).add(1, 'year').unix() * 1000)
+                const value = _.map(this.pickerDates, x => moment.utc(x).add(1, 'year').unix() * 1000)
                 this.applyDateRange(value);
             }
         },
         decrementYear() {
             const prevYear = this.startFilterDate.year() - 1;
             if (prevYear >= this.minYear) {
-                const value = _.map(this.dates, x => moment(x).subtract(1, 'year').unix() * 1000)
+                const value = _.map(this.pickerDates, x => moment.utc(x).subtract(1, 'year').unix() * 1000)
                 this.applyDateRange(value);
             }
         },
