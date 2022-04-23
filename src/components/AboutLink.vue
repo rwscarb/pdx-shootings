@@ -54,3 +54,9 @@ export default {
     },
 }
 </script>
+
+<style scoped lang="less">
+a {
+  color: white;
+}
+</style>

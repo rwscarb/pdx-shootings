@@ -236,13 +236,13 @@ export default {
             return this.endFilterDate.format('YYYY-MM-DD');
         },
         startSliderDate() {
-            return moment(this.value[0]).startOf('day');
+            return moment.utc(this.value[0]);
         },
         startSliderMs() {
             return this.startSliderDate.unix() * 1000;
         },
         endSliderDate() {
-            return moment(this.value[1]).endOf('day');
+            return moment.utc(this.value[1]);
         },
         endSliderMs() {
             return this.endSliderDate.unix() * 1000;
