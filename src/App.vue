@@ -600,6 +600,7 @@ footer {
   backdrop-filter: blur(1px);
   > div {
     display: flex;
+    margin: 0 1em;
   }
 }
 
