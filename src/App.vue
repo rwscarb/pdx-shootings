@@ -25,10 +25,10 @@
                     </div>
                     <div class="range_picker">
                         <n-date-picker type="daterange"
-                                       :value="pickerDates"
-                                       @update:value="applyDateRange"
-                                       :is-date-disabled="dateIsInvalid"
-                                       format="E. MMM do yyyy"/>
+                               :value="pickerDates"
+                               @update:value="applyDateRange"
+                               :is-date-disabled="dateIsInvalid"
+                               format="E. MMM do yyyy"/>
                     </div>
                 </div>
                 <div id="top_nav_stats">
@@ -57,44 +57,13 @@
                       :step="step"
                       :min="startFilterDateMs"
                       :max="endFilterDateMs"/>
-            <n-space class="player">
-                <n-button text @click="moveToFilterStart">
-                    <template #icon>
-                        <icon size="32">
-                            <skip-previous-outlined/>
-                        </icon>
-                    </template>
-                </n-button>
-                <n-button text @click="decrementPlay">
-                    <template #icon>
-                        <icon size="32">
-                            <keyboard-double-arrow-left-outlined/>
-                        </icon>
-                    </template>
-                </n-button>
-                <n-button text circle @click="togglePlayer">
-                    <template #icon>
-                        <icon size="32">
-                            <pause-circle-outline-filled v-if="isPlaying"/>
-                            <play-circle-outline-filled v-else/>
-                        </icon>
-                    </template>
-                </n-button>
-                <n-button text @click="incrementPlay">
-                    <template #icon>
-                        <icon size="32">
-                            <keyboard-double-arrow-right-outlined/>
-                        </icon>
-                    </template>
-                </n-button>
-                <n-button text @click="moveToFilterEnd">
-                    <template #icon>
-                        <icon size="32">
-                            <skip-next-outlined/>
-                        </icon>
-                    </template>
-                </n-button>
-            </n-space>
+            <player-controls
+                    @skip-previous="moveToFilterStart"
+                    @rewind="decrementPlay"
+                    @play="togglePlayer"
+                    @fast-forward="incrementPlay"
+                    @skip-next="moveToFilterEnd"
+                    :is-playing="isPlaying"/>
             <n-drawer v-model:show="showDrawer" placement="bottom">
                 <n-drawer-content title="Filters">
                     <n-space style="display: flex" vertical>
@@ -137,12 +106,6 @@ import mapboxgl from 'mapbox-gl'
 import {
     ArrowForwardFilled,
     FilterAltOutlined,
-    PlayCircleOutlineFilled,
-    PauseCircleOutlineFilled,
-    KeyboardDoubleArrowLeftOutlined,
-    KeyboardDoubleArrowRightOutlined,
-    SkipPreviousOutlined,
-    SkipNextOutlined,
 } from '@vicons/material'
 import { Icon } from '@vicons/utils'
 
@@ -150,6 +113,7 @@ import { Icon } from '@vicons/utils'
 import Popup from './components/Popup.vue'
 import AboutLink from './components/AboutLink.vue'
 import SmallDatepicker from './components/SmallDatepicker.vue';
+import PlayerControls from './components/PlayerControls.vue';
 
 import {
     FILTERABLE_LAYERS,
@@ -480,6 +444,7 @@ export default {
         await Promise.all(_.map(SOURCES, layer => window.$mapbox.removeSource(layer.id)));
     },
     components: {
+        PlayerControls,
         AboutLink,
         Icon,
         NSlider,
@@ -498,12 +463,6 @@ export default {
         NButtonGroup,
         FilterAltOutlined,
         ArrowForwardFilled,
-        PlayCircleOutlineFilled,
-        PauseCircleOutlineFilled,
-        KeyboardDoubleArrowLeftOutlined,
-        KeyboardDoubleArrowRightOutlined,
-        SkipPreviousOutlined,
-        SkipNextOutlined,
         SmallDatepicker,
     },
 };
@@ -579,16 +538,6 @@ footer {
     display: flex;
     align-items: center;
     margin: .5em;
-}
-
-.player {
-  display: flex;
-  padding: .24em;
-  backdrop-filter: blur(1px);
-  > div {
-    display: flex;
-    margin: 0 1em;
-  }
 }
 
 #top_nav_stats {
