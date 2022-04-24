@@ -71,7 +71,7 @@ export default {
 }
 </script>
 
-<style scoped lang="less">
+<style lang="less">
 .player {
   display: flex;
   padding: .24em;
