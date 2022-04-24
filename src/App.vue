@@ -13,11 +13,15 @@
                 </div>
                 <div id="filter_date_picker">
                     <div class="small_date_pickers">
-                        <small-datepicker @update:value="setStartFilterDate" :value="startFilterDate.format('YYYY-MM-DD')"/>
+                        <small-datepicker
+                                @update:value="setStartFilterDate"
+                                :value="startFilterDate.format('YYYY-MM-DD')"/>
                         <icon style="margin: 0 1em">
                             <arrow-forward-filled/>
                         </icon>
-                        <small-datepicker @update:value="setEndFilterDate" :value="endFilterDate.format('YYYY-MM-DD')"/>
+                        <small-datepicker
+                                @update:value="setEndFilterDate"
+                                :value="endFilterDate.format('YYYY-MM-DD')"/>
                     </div>
                     <div class="range_picker">
                         <n-date-picker type="daterange"
@@ -109,8 +113,6 @@
 
 <script>
 import 'mapbox-gl/dist/mapbox-gl.css'
-import 'vfonts/Lato.css'
-import 'vfonts/FiraCode.css'
 import _ from 'lodash'
 import { createApp } from 'vue'
 import moment from 'moment'
@@ -163,11 +165,13 @@ import barrelImgUrl from './assets/street-barrel.png'
 export default {
     name: 'App',
     data() {
-        const today = moment().startOf('day');
-        const start = today.clone().subtract(1, 'year').unix() * 1000;
-        const end = today.unix() * 1000;
+        const dataEndDate = moment().startOf('day').startOf('month').subtract(1, 'day');
+        const start = dataEndDate.clone().subtract(1, 'year').unix() * 1000;
+        const end = dataEndDate.unix() * 1000;
         return {
             mapLoaded: false,
+            dataStartDate: moment.utc({year: 2019}).unix() * 1000,
+            dataEndDate:  dataEndDate.unix() * 1000,
             value: [start, end],
             pickerDates: [start, end],
             showHeatMap: false,
@@ -202,16 +206,6 @@ export default {
     computed: {
         allLayers() {
             return [...NON_FILTERABLE_LAYERS, ...FILTERABLE_LAYERS];
-        },
-        availableYears() {
-            // todo:
-            return [2019, 2020, 2021, 2022];
-        },
-        maxYear() {
-            return _.last(this.availableYears);
-        },
-        minYear() {
-            return _.first(this.availableYears);
         },
         startFilterDate() {
             return this.utcDates[0];
@@ -350,19 +344,19 @@ export default {
             }
         },
         dateIsInvalid(value) {
-            const year = moment.utc(value).year();
-            return year > this.maxYear || year < this.minYear;
+            const date = moment.utc(value);
+            return date.isAfter(this.dataEndDate) || date.isBefore(this.dataStartDate);
         },
         incrementYear() {
-            const nextYear = this.endFilterDate.year() + 1;
-            if (nextYear <= this.maxYear) {
+            const nextYear = this.endFilterDate.clone().add(1, 'year');
+            if (nextYear.isBefore(this.dataEndDate)) {
                 const value = _.map(this.pickerDates, x => moment.utc(x).add(1, 'year').unix() * 1000)
                 this.applyDateRange(value);
             }
         },
         decrementYear() {
-            const prevYear = this.startFilterDate.year() - 1;
-            if (prevYear >= this.minYear) {
+            const prevYear = this.startFilterDate.clone().subtract(1, 'year');
+            if (prevYear.isAfter(this.dataStartDate)) {
                 const value = _.map(this.pickerDates, x => moment.utc(x).subtract(1, 'year').unix() * 1000)
                 this.applyDateRange(value);
             }
