@@ -9,6 +9,9 @@
         <nav>
             <div id="top_right_tools">
                 <div>
+                    Cluster <n-switch v-model:value="showClustered"/>
+                </div>
+                <div>
                     Heatmap <n-switch v-model:value="showHeatMap"/>
                 </div>
                 <div id="filter_date_picker">
@@ -139,6 +142,7 @@ export default {
             value: [start, end],
             pickerDates: [start, end],
             showHeatMap: false,
+            showClustered: true,
             items: [],
             shootingsCount: 0,
             showDrawer: false,
@@ -152,10 +156,22 @@ export default {
     },
     watch: {
         showHeatMap(newVal) {
+            if (newVal) {
+                this.showClustered = false;
+            }
             this.setLayerVisibility('shootings-heatmap', newVal);
         },
         showBarrels(newVal) {
             this.setLayerVisibility('barrels', newVal);
+        },
+        showClustered(newVal) {
+            if (newVal && this.showHeatMap) {
+                this.showHeatMap = false;
+            }
+            this.setLayerVisibility('clusters', newVal);
+            this.setLayerVisibility('cluster-count', newVal);
+            this.setLayerVisibility('shootings-circles', !newVal);
+            this.setLayerVisibility('shootings-circles-hover', !newVal);
         },
         filter() {
             this.applyFilters();
@@ -351,6 +367,11 @@ export default {
         },
         async onMapLoaded() {
             this.sourceData = await (await fetch('/shootings.geojson')).json()
+            await window.$mapbox.addSource('shootings-clustered', {
+                type: 'geojson',
+                data: this.sourceData,
+                cluster: true,
+            });
             await window.$mapbox.addSource('shootings', {
                 type: 'geojson',
                 data: this.sourceData,
@@ -358,11 +379,6 @@ export default {
             await window.$mapbox.addSource('barrels', {
                 'type': 'geojson',
                 'data': '/barrels.geojson',
-            });
-            await window.$mapbox.on('sourcedata', e => {
-                if (e.sourceId === 'shootings' && e.isSourceLoaded) {
-                    this.applyFilters();
-                }
             });
             window.$mapbox.loadImage(
                 barrelImgUrl,
@@ -372,6 +388,7 @@ export default {
                 },
             );
             await Promise.all(_.map(this.allLayers, layer => window.$mapbox.addLayer(layer)));
+            this.applyFilters();
             this.mapLoaded = true;
         },
         formatDateSliderTooltip(value) {
@@ -379,10 +396,11 @@ export default {
         },
         applyFilters() {
             if (!this.mapLoaded) return
-
-            const _this = this;
-            _.forEach(FILTERABLE_LAYERS, layer => {
-                window.$mapbox.setFilter(layer.id, _this.filter);
+            _.forEach(['shootings-clustered', 'shootings'], source => {
+                window.$mapbox.getSource(source).setData({
+                    type: 'FeatureCollection',
+                    features: this.filteredFeatures,
+                });
             });
             this.shootingsCount = this.filteredFeatures.length;
         },
@@ -395,8 +413,6 @@ export default {
             style: 'mapbox://styles/mapbox/dark-v10',
             center: [-122.67598626624789, 45.51939452327494],
             zoom: 12,
-            minZoom: MIN_ZOOM,
-            maxZoom: MAX_ZOOM
         });
         window.$mapbox.addControl(new mapboxgl.NavigationControl(), 'top-left');
         window.$mapbox.addControl(new mapboxgl.FullscreenControl(), 'top-left');
@@ -420,11 +436,35 @@ export default {
             window.$popup.setLngLat(coordinates).addTo(window.$mapbox);
         });
 
+        window.$mapbox.on('click', 'clusters', e => {
+            const features = $mapbox.queryRenderedFeatures(e.point, {
+                layers: ['clusters']
+            });
+
+            const clusterId = features[0].properties.cluster_id;
+            const pointCount = features[0].properties.point_count;
+
+            $mapbox.getSource('shootings-clustered').getClusterLeaves(clusterId, pointCount, 0, (error, features) => {
+                if (!error) {
+                    this.popupVueInstance.setItems(_.map(features, 'properties'));
+                    window.$popup.setLngLat(e.lngLat).addTo(window.$mapbox);
+                }
+            });
+        });
+
         window.$mapbox.on('mouseenter', 'shootings-circles-hover', e => {
             window.$mapbox.getCanvas().style.cursor = 'pointer';
         });
 
         window.$mapbox.on('mouseleave', 'shootings-circles-hover', () => {
+            window.$mapbox.getCanvas().style.cursor = '';
+        });
+
+        window.$mapbox.on('mouseenter', 'clusters', e => {
+            window.$mapbox.getCanvas().style.cursor = 'pointer';
+        });
+
+        window.$mapbox.on('mouseleave', 'clusters', () => {
             window.$mapbox.getCanvas().style.cursor = '';
         });
 

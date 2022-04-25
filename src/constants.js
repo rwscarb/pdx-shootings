@@ -35,8 +35,9 @@ export const CIRCLE_LAYER = {
     id: 'shootings-circles',
     type: 'circle',
     source: 'shootings',
+    filter: ['!', ['has', 'point_count']],
     layout: {
-        visibility: 'visible'
+        visibility: 'none'
     },
     paint: {
         'circle-radius': 3,
@@ -48,12 +49,55 @@ export const CIRCLE_LAYER_HOVER = {
     id: 'shootings-circles-hover',
     type: 'circle',
     source: 'shootings',
+    filter: ['!', ['has', 'point_count']],
     layout: {
-        visibility: 'visible'
+        visibility: 'none'
     },
     paint: {
         'circle-radius': 10,
         'circle-opacity': 0
+    }
+};
+
+export const CLUSTER_LAYER = {
+    id: 'clusters',
+    type: 'circle',
+    source: 'shootings-clustered',
+    filter: ['has', 'point_count'],
+    layout: {
+        visibility: 'visible'
+    },
+    paint: {
+        'circle-color': [
+            'step',
+            ['get', 'point_count'],
+            '#51bbd6',
+            10,
+            '#f1f075',
+            30,
+            '#f28cb1'
+        ],
+        'circle-radius': [
+            'step',
+            ['get', 'point_count'],
+            10,
+            5, 15,
+            10, 20,
+            50, 25,
+            100, 30,
+        ]
+    }
+};
+
+export const CLUSTER_COUNT_LAYER = {
+    id: 'cluster-count',
+    type: 'symbol',
+    source: 'shootings-clustered',
+    filter: ['has', 'point_count'],
+    layout: {
+        'visibility': 'visible',
+        'text-field': '{point_count_abbreviated}',
+        'text-size': 12
     }
 };
 
@@ -80,7 +124,7 @@ export const BARREL_LAYER = {
     }
 };
 
-export const FILTERABLE_LAYERS = [HEATMAP_LAYER, CIRCLE_LAYER, CIRCLE_LAYER_HOVER];
+export const FILTERABLE_LAYERS = [CLUSTER_LAYER, CLUSTER_COUNT_LAYER, HEATMAP_LAYER, CIRCLE_LAYER, CIRCLE_LAYER_HOVER];
 export const NON_FILTERABLE_LAYERS = [BARREL_LAYER];
 export const SOURCES = [{id: 'shootings'}, {id: 'barrels'}];
 export const MIN_ZOOM = 10;
