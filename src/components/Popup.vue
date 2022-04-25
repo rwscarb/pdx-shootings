@@ -25,7 +25,7 @@
         </n-grid>
         <n-divider></n-divider>
         <n-collapse v-if="!loading">
-            <n-collapse-item v-for="item in sortedUniqueItems">
+            <n-collapse-item v-for="item in sortedUniqueItems" :key="item.id">
                 <template #header>
                     <div class="collapse_header">
                         <div>
