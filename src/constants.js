@@ -71,11 +71,11 @@ export const CLUSTER_LAYER = {
         'circle-color': [
             'step',
             ['get', 'point_count'],
-            '#51bbd6',
+            '#337d8f',
             10,
-            '#f1f075',
+            '#b5c238',
             30,
-            '#f28cb1'
+            'rgba(242,140,177,0.76)'
         ],
         'circle-radius': [
             'step',
