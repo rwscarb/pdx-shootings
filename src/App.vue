@@ -567,6 +567,7 @@ footer {
 
   > div {
     margin: 0 .5em;
+    font-weight: 500;
   }
 }
 
