@@ -372,6 +372,11 @@ export default {
                 data: this.sourceData,
                 cluster: true,
             });
+            window.$mapbox.on('sourcedata', e => {
+                if (e.sourceId === 'shootings-clustered' && e.isSourceLoaded) {
+                    this.applyFilters();
+                }
+            });
             await window.$mapbox.addSource('shootings', {
                 type: 'geojson',
                 data: this.sourceData,
@@ -388,7 +393,6 @@ export default {
                 },
             );
             await Promise.all(_.map(this.allLayers, layer => window.$mapbox.addLayer(layer)));
-            this.applyFilters();
             this.mapLoaded = true;
         },
         formatDateSliderTooltip(value) {
@@ -437,14 +441,14 @@ export default {
         });
 
         window.$mapbox.on('click', 'clusters', e => {
-            const features = $mapbox.queryRenderedFeatures(e.point, {
+            const features = window.$mapbox.queryRenderedFeatures(e.point, {
                 layers: ['clusters']
             });
 
             const clusterId = features[0].properties.cluster_id;
             const pointCount = features[0].properties.point_count;
 
-            $mapbox.getSource('shootings-clustered').getClusterLeaves(clusterId, pointCount, 0, (error, features) => {
+            window.$mapbox.getSource('shootings-clustered').getClusterLeaves(clusterId, pointCount, 0, (error, features) => {
                 if (!error) {
                     this.popupVueInstance.setItems(_.map(features, 'properties'));
                     window.$popup.setLngLat(e.lngLat).addTo(window.$mapbox);
