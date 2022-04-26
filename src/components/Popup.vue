@@ -132,7 +132,7 @@ export default {
             return moment.utc(ms).format('YYYY-MM-DD');
         },
         getGoogleStreetViewUrl(item) {
-            const location = JSON.parse(item.location);
+            const location = _.isString(item.location) ? JSON.parse(item.location) : item.location;
             return `//maps.google.com/maps?q=&layer=c&cbll=${location[1]},${location[0]}`;
         },
     },
