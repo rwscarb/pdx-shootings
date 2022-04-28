@@ -1,0 +1,39 @@
+name: Fetch and Deploy
+
+on:
+  push:
+    branches:
+      - master
+  schedule:
+      - cron: '0 0 * * *'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16.x
+
+      - name: Fetch Shootings
+        run: ./scripts/fetch-shootings.py
+
+      - name: Fetch Barrels
+        run: ./scripts/fetch-barrels.py
+
+      - name: Build
+        run: |
+          npm install
+          npm run build
+        env:
+          VITE_MAPBOX_API_TOKEN: ${{ secrets.VITE_MAPBOX_API_TOKEN }}
+
+      - name: Deploy 🚀
+        uses: JamesIves/github-pages-deploy-action@v4.3.0
+        with:
+          branch: gh-pages
+          folder: dist
