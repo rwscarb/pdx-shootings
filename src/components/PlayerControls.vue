@@ -76,6 +76,7 @@ export default {
   display: flex;
   padding: .24em;
   backdrop-filter: blur(1px);
+  -webkit-backdrop-filter: blur(1px);
   > div {
     display: flex;
     margin: 0 2em;

@@ -558,6 +558,7 @@ footer {
   text-align: center;
   color: white;
   backdrop-filter: blur(2px) brightness(60%);
+  -webkit-backdrop-filter: blur(2px) brightness(60%);
 
   > div {
     margin: .25em;
