@@ -18,7 +18,7 @@
                     </n-button>
                     <about-link/>
                 </div>
-                <div id="top_nav_stats">
+                <div id="top_nav_stats" :style="`font-size: ${mq.lgPlus ? 14 : 12}px`">
                     <div>
                         Displaying: {{ startSliderDate.format('YYYY-MM-DD') }} to {{ endSliderDate.format('YYYY-MM-DD') }}
                     </div>
@@ -590,7 +590,6 @@ footer {
 #top_nav_stats {
   display: flex;
   flex-flow: row wrap;
-  font-size: 13px;
   > div {
     margin: .5em;
   }
