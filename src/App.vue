@@ -83,6 +83,11 @@
                                     Traffic Barrels
                                 </n-checkbox>
                             </div>
+                            <div>
+                                <n-checkbox v-model:checked="sizeByCasings">
+                                    Size by Casings
+                                </n-checkbox>
+                            </div>
                             <n-space align="center">
                                 <input type="number" min="0" v-model="minCasings" style="max-width: 2em" v-if="mq.smMinus">
                                 <n-input-number v-model:value="minCasings" :min="0" style="width: 6em" v-else/>
@@ -164,6 +169,7 @@ export default {
             injuryOnly: false,
             minCasings: 0,
             showBarrels: false,
+            sizeByCasings: false,
             step: DAY_MS,
             playInterval: null,
             playIntervalSpeed: 400,
@@ -179,6 +185,17 @@ export default {
         },
         showBarrels(newVal) {
             this.setLayerVisibility('barrels', newVal);
+        },
+        sizeByCasings(newVal) {
+            const cond = newVal ? ['step', ['get', 'casings'],
+                3,
+                5, 7,
+                10, 10,
+                25, 15,
+                50, 20,
+                100, 40] : 3;
+            window.$mapbox.setPaintProperty('shootings-circles', 'circle-radius', cond);
+            this.setLayerVisibility('shootings-circles-casings-count', newVal);
         },
         showClustered(newVal) {
             if (newVal && this.showHeatMap) {

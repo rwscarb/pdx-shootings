@@ -41,7 +41,7 @@ def main():
                 })
         json.dump({
             'type': 'FeatureCollection',
-            'features': features,
+            'features': sorted(features, key=lambda x: x['properties']['casings'], reverse=True),
         }, open('./public/shootings.geojson', 'w'))
         return 0
     return 1

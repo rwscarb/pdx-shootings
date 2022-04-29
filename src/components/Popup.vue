@@ -32,7 +32,7 @@
                             {{ getDateString(item.date) }}
                         </div>
                         <div style="flex-grow: 1">
-                            <span style="margin: 0 10px">Casings: {{ item.casings }}</span>
+                            <span style="margin-left: 10px">Casings: {{ item.casings }}</span>
                         </div>
                         <div style="text-align: right">
                             <icon class="injury">

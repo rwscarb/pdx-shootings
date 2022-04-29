@@ -44,6 +44,18 @@ export const CIRCLE_LAYER = {
     }
 };
 
+export const CASINGS_COUNT_LAYER = {
+    id: 'shootings-circles-casings-count',
+    type: 'symbol',
+    source: 'shootings',
+    filter: ['>=', ['get', 'casings'], 50],
+    layout: {
+        'visibility': 'none',
+        'text-field': '{casings}',
+        'text-size': 12
+    }
+};
+
 export const CIRCLE_LAYER_HOVER = {
     id: 'shootings-circles-hover',
     type: 'circle',
@@ -150,9 +162,7 @@ export const BARREL_LAYER = {
     }
 };
 
-export const FILTERABLE_LAYERS = [CLUSTER_LAYER, CLUSTER_COUNT_LAYER, CLUSTER_POINT_LAYER, CLUSTER_POINT_LAYER_HOVER, HEATMAP_LAYER, CIRCLE_LAYER, CIRCLE_LAYER_HOVER];
+export const FILTERABLE_LAYERS = [CLUSTER_LAYER, CLUSTER_COUNT_LAYER, CLUSTER_POINT_LAYER, CLUSTER_POINT_LAYER_HOVER, HEATMAP_LAYER, CIRCLE_LAYER, CASINGS_COUNT_LAYER, CIRCLE_LAYER_HOVER];
 export const NON_FILTERABLE_LAYERS = [BARREL_LAYER];
-export const SOURCES = [{id: 'shootings'}, {id: 'barrels'}];
-export const MIN_ZOOM = 10;
-export const MAX_ZOOM = 15.66;
+export const SOURCES = [{id: 'shootings'}, {id: 'shootings-clustered'}, {id: 'barrels'}];
 export const DAY_MS = 1000 * 60 * 60 * 24;
