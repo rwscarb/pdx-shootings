@@ -14,6 +14,9 @@
                     and <a href="https://www.mapbox.com/" target="_blank">Mapbox</a>.
                 </p>
                 <p>
+                    <a href="https://github.com/rwscarb/pdx-shootings" target="_blank">Source</a>
+                </p>
+                <p>
                     Data sourced from:<br/>
                     <a
                         href="https://www.portlandoregon.gov/police/81203"

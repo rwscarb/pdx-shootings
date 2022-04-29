@@ -33,7 +33,15 @@ jobs:
           VITE_MAPBOX_API_TOKEN: ${{ secrets.VITE_MAPBOX_API_TOKEN }}
 
       - name: Deploy 🚀
-        uses: JamesIves/github-pages-deploy-action@v4.3.0
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        uses: reggionick/s3-deploy@v3
         with:
-          branch: gh-pages
           folder: dist
+          bucket: pdx-shootings
+          bucket-region: us-west-2
+          dist-id: E1BCPAYFFGWOA6
+          invalidation: /
+          delete-removed: true
+          private: true
