@@ -8,6 +8,13 @@
 npm i
 ```
 
+### Secrets Setup
+
+```sh
+cp .env .env.local
+vi .env.local
+```
+
 ### Compile and Hot-Reload for Development
 
 ```sh
