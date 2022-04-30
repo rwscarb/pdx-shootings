@@ -24,6 +24,10 @@
                     <a href="https://pdx.maps.arcgis.com/apps/webappviewer/index.html?id=08e3f719c5ec4be195f17c38cff8fce3"
                        target="_blank">PBOT</a>
                 </p>
+                <template #footer>
+                    Dedicated in memory of<br/>
+                    José Monroy Castańeda
+                </template>
             </n-card>
         </n-modal>
         <icon size="18">
