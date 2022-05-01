@@ -419,7 +419,7 @@ export default {
             return moment.utc(value).format('MM/DD/YYYY');
         },
         formatHourSliderTooltip(value) {
-            return `${_.padStart(value, 2, '0')}00`;
+            return `${_.padStart(value, 2, '0')}:00`;
         },
         applyFilters() {
             if (!this.mapLoaded) return
