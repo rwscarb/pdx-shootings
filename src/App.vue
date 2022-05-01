@@ -96,7 +96,7 @@
                                   v-model:value="hourSliderValue"
                                   :format-tooltip="formatHourSliderTooltip"
                                   :min="0"
-                                  :max="23"/>
+                                  :max="24"/>
                             <div v-if="mq.lgMinus" class="layer_toggles" style="flex-flow: column">
                                 <div>
                                     <n-switch v-model:value="showClustered"/> Cluster
@@ -245,7 +245,7 @@ export default {
             return _.filter(this.sourceData.features, x => {
                 return _.every([
                     x.properties.date >= this.startSliderMs && x.properties.date <= this.endSliderMs,
-                    x.properties.start_hour >= this.hourSliderValue[0] && x.properties.end_hour <= this.hourSliderValue[1],
+                    x.properties.start_hour <= this.hourSliderValue[1] && x.properties.end_hour >= this.hourSliderValue[0],
                     this.injuryOnly ? x.properties.injury : true,
                     this.minCasings ?  x.properties.casings >= this.minCasings : true,
                 ]);

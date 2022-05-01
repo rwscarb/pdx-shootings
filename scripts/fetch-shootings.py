@@ -22,7 +22,7 @@ def main():
             time = row['Occur 2hr Time'].replace(' ', '')
 
             start_hour = 0
-            end_hour = 23
+            end_hour = 24
             if time:
                 start_hour,  end_hour = map(int, [x[:2] for x in time.split('-')])
 
