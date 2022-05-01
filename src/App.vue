@@ -380,7 +380,13 @@ export default {
             }, this.playIntervalSpeed);
         },
         async onMapLoaded() {
-            this.sourceData = await (await fetch('/shootings.geojson')).json()
+            this.sourceData = await (await fetch('/shootings.geojson')).json();
+
+            const features = _.sortBy(this.sourceData.features, 'properties.date');
+            this.dataStartDate = _.head(features).properties.date;
+            this.dataEndDate = _.last(features).properties.date;
+            this.applyDateRange([this.startSliderMs, this.dataEndDate]);
+
             await window.$mapbox.addSource('shootings-clustered', {
                 type: 'geojson',
                 data: this.sourceData,
@@ -492,7 +498,7 @@ export default {
     },
     created() {
         this.popupVueInstance = null;
-        this.sourceData = [];
+        this.sourceData = {};
     },
     async unmounted() {
         await Promise.all(_.map(this.allLayers, layer => window.$mapbox.removeLayer(layer.id)));
