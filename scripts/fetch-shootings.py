@@ -19,11 +19,20 @@ def main():
         for row in dr:
             coordinates = [float(row['Open Data Longitude']), float(row['Open Data Latitude'])]
             uid = row['Incident Number']
+            time = row['Occur 2hr Time'].replace(' ', '')
+
+            start_hour = 0
+            end_hour = 23
+            if time:
+                start_hour,  end_hour = map(int, [x[:2] for x in time.split('-')])
+
             incident = {
                 'block_address': row['Block Address'],
                 'id': uid,
                 'date': calendar.timegm(datetime.datetime.strptime(row['Occurence Date'], '%m/%d/%Y').timetuple()) * 1000,
-                'time': row['Occur 2hr Time'].replace(' ', ''),
+                'time': time,
+                'start_hour': start_hour,
+                'end_hour': end_hour,
                 'injury': row['Person Injury'].strip().lower() == 'true',
                 'precinct': row['Precinct'],
                 'casings': int(row['CasingsRecovered']),

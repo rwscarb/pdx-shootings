@@ -57,7 +57,7 @@
         <footer>
             <n-slider id="day_slider_input"
                       range
-                      v-model:value="sliderValue"
+                      v-model:value="dateSliderValue"
                       :format-tooltip="formatDateSliderTooltip"
                       :step="step"
                       :min="startFilterDateMs"
@@ -90,6 +90,13 @@
                             </n-space>
                         </n-gi>
                         <n-gi>
+                            <label for="hour_slider_input">Time of Day</label>
+                            <n-slider id="hour_slider_input"
+                                  range
+                                  v-model:value="hourSliderValue"
+                                  :format-tooltip="formatHourSliderTooltip"
+                                  :min="0"
+                                  :max="23"/>
                             <div v-if="mq.lgMinus" class="layer_toggles" style="flex-flow: column">
                                 <div>
                                     <n-switch v-model:value="showClustered"/> Cluster
@@ -153,7 +160,8 @@ export default {
             mapLoaded: false,
             dataStartDate: moment.utc({year: 2019}).unix() * 1000,
             dataEndDate:  dataEndDate.unix() * 1000,
-            sliderValue: [start, end],
+            dateSliderValue: [start, end],
+            hourSliderValue: [0, 24],
             pickerDates: [start, end],
             showHeatMap: false,
             showClustered: true,
@@ -189,10 +197,16 @@ export default {
             this.setLayerVisibility('shootings-circles', !newVal);
             this.setLayerVisibility('shootings-circles-hover', !newVal);
         },
-        sliderValue(newVal) {
+        dateSliderValue(newVal) {
             const [start, end] = newVal;
             if (start > end) {
-                this.sliderValue = [end, end];
+                this.dateSliderValue = [end, end];
+            }
+        },
+        hourSliderValue(newVal) {
+            const [start, end] = newVal;
+            if (start > end) {
+                this.hourSliderValue = [end, end];
             }
         },
     },
@@ -213,24 +227,25 @@ export default {
             return this.endFilterDate.unix() * 1000;
         },
         startSliderDate() {
-            return moment.utc(this.sliderValue[0]);
+            return moment.utc(this.dateSliderValue[0]);
         },
         startSliderMs() {
             return this.startSliderDate.unix() * 1000;
         },
         endSliderDate() {
-            return moment.utc(this.sliderValue[1]);
+            return moment.utc(this.dateSliderValue[1]);
         },
         endSliderMs() {
             return this.endSliderDate.unix() * 1000;
         },
         sliderDistanceMs() {
-            return this.sliderValue[1] - this.sliderValue[0];
+            return this.dateSliderValue[1] - this.dateSliderValue[0];
         },
         filteredFeatures() {
             return _.filter(this.sourceData.features, x => {
                 return _.every([
                     x.properties.date >= this.startSliderMs && x.properties.date <= this.endSliderMs,
+                    x.properties.start_hour >= this.hourSliderValue[0] && x.properties.end_hour <= this.hourSliderValue[1],
                     this.injuryOnly ? x.properties.injury : true,
                     this.minCasings ?  x.properties.casings >= this.minCasings : true,
                 ]);
@@ -254,10 +269,10 @@ export default {
             this.setPlayInterval(this.playIntervalSpeed * 2);
         },
         moveToFilterStart() {
-            this.sliderValue = [this.startFilterDateMs, this.startFilterDateMs + this.sliderDistanceMs];
+            this.dateSliderValue = [this.startFilterDateMs, this.startFilterDateMs + this.sliderDistanceMs];
         },
         moveToFilterEnd() {
-            this.sliderValue = [this.endFilterDateMs - this.sliderDistanceMs, this.endFilterDateMs];
+            this.dateSliderValue = [this.endFilterDateMs - this.sliderDistanceMs, this.endFilterDateMs];
         },
         handleKeyDown($e) {
             switch ($e.key) {
@@ -298,11 +313,11 @@ export default {
             }
         },
         setEndSlider(duration) {
-            const newSliderEndDate = moment.utc(this.sliderValue[0]).add(1, duration);
+            const newSliderEndDate = moment.utc(this.dateSliderValue[0]).add(1, duration);
             if (newSliderEndDate.isAfter(this.endFilterDate)) {
-                this.sliderValue[1] = this.endFilterDateMs;
+                this.dateSliderValue[1] = this.endFilterDateMs;
             } else {
-                this.sliderValue[1] = newSliderEndDate.unix() * 1000;
+                this.dateSliderValue[1] = newSliderEndDate.unix() * 1000;
             }
         },
         setStartFilterDate(value) {
@@ -323,9 +338,9 @@ export default {
         },
         applyDateRange(value) {
             this.pickerDates = value;
-            const [start, end]  = this.sliderValue;
+            const [start, end]  = this.dateSliderValue;
             if (start < this.pickerDates[0] || end > this.pickerDates[1]) {
-                this.sliderValue =  _.map(this.utcDates, x => x.unix() * 1000);
+                this.dateSliderValue =  _.map(this.utcDates, x => x.unix() * 1000);
             }
         },
         dateIsInvalid(value) {
@@ -360,11 +375,11 @@ export default {
         startPlayer() {
             const _this = this;
             this.playInterval = setInterval(() => {
-                const nextStep = _this.sliderValue[1] + _this.step;
+                const nextStep = _this.dateSliderValue[1] + _this.step;
                 if (nextStep < _this.endFilterDateMs) {
-                    _this.sliderValue = _.map(_this.sliderValue, x => x + _this.step);
+                    _this.dateSliderValue = _.map(_this.dateSliderValue, x => x + _this.step);
                 } else {
-                    _this.sliderValue[1] = this.endFilterDateMs;
+                    _this.dateSliderValue[1] = this.endFilterDateMs;
                     clearInterval(_this.playInterval);
                     _this.playInterval = null;
                 }
@@ -402,6 +417,9 @@ export default {
         },
         formatDateSliderTooltip(value) {
             return moment.utc(value).format('MM/DD/YYYY');
+        },
+        formatHourSliderTooltip(value) {
+            return `${_.padStart(value, 2, '0')}00`;
         },
         applyFilters() {
             if (!this.mapLoaded) return
@@ -542,6 +560,12 @@ footer {
 
 #day_slider_input {
   max-width: 80%;
+}
+
+label[for="hour_slider_input"] {
+  display: block;
+  margin-bottom: .25em;
+  text-align: center;
 }
 
 #app, #map {
