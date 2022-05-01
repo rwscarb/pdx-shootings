@@ -385,7 +385,7 @@ export default {
             const features = _.sortBy(this.sourceData.features, 'properties.date');
             this.dataStartDate = _.head(features).properties.date;
             this.dataEndDate = _.last(features).properties.date;
-            this.applyDateRange([this.startSliderMs, this.dataEndDate]);
+            this.applyDateRange([moment.utc(this.dataEndDate).subtract(1, 'year').unix() * 1000, this.dataEndDate]);
 
             await window.$mapbox.addSource('shootings-clustered', {
                 type: 'geojson',
