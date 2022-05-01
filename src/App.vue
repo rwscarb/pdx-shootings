@@ -203,12 +203,6 @@ export default {
                 this.dateSliderValue = [end, end];
             }
         },
-        hourSliderValue(newVal) {
-            const [start, end] = newVal;
-            if (start > end) {
-                this.hourSliderValue = [end, end];
-            }
-        },
     },
     computed: {
         allLayers() {
@@ -564,7 +558,7 @@ footer {
 
 label[for="hour_slider_input"] {
   display: block;
-  margin-bottom: .25em;
+  margin-bottom: 1em;
   text-align: center;
 }
 
