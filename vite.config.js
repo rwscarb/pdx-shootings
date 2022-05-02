@@ -8,7 +8,7 @@ const plugins = [vue()];
 
 if (process.env.VITE_SENTRY_DSN) {
   const sentryConfig  = {
-    authToken: process.env.VITE_SENTRY_DSN,
+    authToken: process.env.VITE_SENTRY_API_TOKEN,
     org: 'ryan-scarbery',
     project: 'pdx-shootings',
     deploy: {
