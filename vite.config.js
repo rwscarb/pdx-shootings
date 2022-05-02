@@ -27,6 +27,9 @@ if (process.env.VITE_SENTRY_DSN) {
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins,
+  build: {
+    sourcemap: true,
+  },
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))
