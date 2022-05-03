@@ -84,7 +84,7 @@
                                 </n-checkbox>
                             </div>
                             <n-space align="center">
-                                <input type="number" min="0" v-model="minCasings" style="max-width: 2em" v-if="mq.smMinus">
+                                <input type="number" pattern="\d*" min="0" v-model="minCasings" style="max-width: 2em" v-if="mq.smMinus">
                                 <n-input-number v-model:value="minCasings" :min="0" style="width: 6em" v-else/>
                                 Min Casings
                             </n-space>
