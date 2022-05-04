@@ -17,7 +17,7 @@
                             <filter-alt-outlined v-else/>
                         </icon>
                     </n-button>
-                    <n-popover placement="bottom" trigger="hover">
+                    <n-popover placement="bottom" trigger="hover" @update:show="updateDeepLink">
                         <template #trigger>
                             <n-button>
                                 <icon size="18">
@@ -185,7 +185,6 @@ export default {
             showHelpModal: false,
             items: [],
             shootingsCount: 0,
-            hasAppliedFilters: false,
             showDrawer: false,
             injuryOnly: false,
             minCasings: 0,
@@ -193,6 +192,7 @@ export default {
             step: DAY_MS,
             playInterval: null,
             playIntervalSpeed: 400,
+            deepLink: '',
             theme: darkTheme,
         };
     },
@@ -276,31 +276,6 @@ export default {
                 this.hourSliderValue[0],
                 this.hourSliderValue[1] !== 24
             ]);
-        },
-        deepLink() {
-            const url = new URL(document.location.origin);
-            const coords = window.$mapbox.getCenter();
-            const zoom = window.$mapbox.getZoom();
-            url.searchParams.set('lng', _.toString(_.round(coords.lng, 6)));
-            url.searchParams.set('lat', _.toString(_.round(coords.lat, 6)));
-            url.searchParams.set('zoom', _.toString(_.round(zoom, 3)));
-            url.searchParams.set('start_date', this.startFilterDate.format('YYYY-MM-DD'));
-            url.searchParams.set('end_date', this.endFilterDate.format('YYYY-MM-DD'));
-            if (!_.isEqual(this.hourSliderValue, [0, 24])) {
-                url.searchParams.set('start_hour', _.toString(this.hourSliderValue[0]));
-                url.searchParams.set('end_hour', _.toString(this.hourSliderValue[1]));
-            }
-            if (this.injuryOnly) {
-                url.searchParams.set('injury', 'true');
-            }
-            if (this.showBarrels) {
-                url.searchParams.set('barrels', 'true');
-            }
-            if (this.minCasings) {
-                url.searchParams.set('casings', _.toString(this.minCasings));
-            }
-            return url.toString();
-
         },
     },
     methods: {
@@ -536,6 +511,30 @@ export default {
                 });
             });
             this.shootingsCount = this.filteredFeatures.length;
+        },
+        updateDeepLink() {
+            const url = new URL(document.location.origin);
+            const coords = window.$mapbox.getCenter();
+            const zoom = window.$mapbox.getZoom();
+            url.searchParams.set('lng', _.toString(_.round(coords.lng, 6)));
+            url.searchParams.set('lat', _.toString(_.round(coords.lat, 6)));
+            url.searchParams.set('zoom', _.toString(_.round(zoom, 3)));
+            url.searchParams.set('start_date', this.startFilterDate.format('YYYY-MM-DD'));
+            url.searchParams.set('end_date', this.endFilterDate.format('YYYY-MM-DD'));
+            if (!_.isEqual(this.hourSliderValue, [0, 24])) {
+                url.searchParams.set('start_hour', _.toString(this.hourSliderValue[0]));
+                url.searchParams.set('end_hour', _.toString(this.hourSliderValue[1]));
+            }
+            if (this.injuryOnly) {
+                url.searchParams.set('injury', 'true');
+            }
+            if (this.showBarrels) {
+                url.searchParams.set('barrels', 'true');
+            }
+            if (this.minCasings) {
+                url.searchParams.set('casings', _.toString(this.minCasings));
+            }
+            this.deepLink = url.toString();
         },
     },
     mounted() {
