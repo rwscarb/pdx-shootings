@@ -1,4 +1,5 @@
 import { createApp } from 'vue'
+
 import { Vue3Mq } from 'vue3-mq'
 import * as Sentry from '@sentry/vue'
 import { BrowserTracing } from '@sentry/tracing'

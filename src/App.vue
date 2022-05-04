@@ -12,10 +12,21 @@
             <div id="header">
                 <div id="nav_extra_icons">
                     <n-button @click="showDrawer = !showDrawer">
-                        <icon size="18">
-                            <filter-alt-outlined/>
+                        <icon size="18" :color="hasAppliedFilters ? 'rgb(42, 148, 125)' : undefined">
+                            <filter-alt-twotone v-if="hasAppliedFilters"/>
+                            <filter-alt-outlined v-else/>
                         </icon>
                     </n-button>
+                    <n-popover placement="bottom" trigger="hover">
+                        <template #trigger>
+                            <n-button>
+                                <icon size="18">
+                                    <share-outlined/>
+                                </icon>
+                            </n-button>
+                        </template>
+                        <span><a :href="deepLink" style="color: white">Sharable Link</a></span>
+                    </n-popover>
                     <about-link/>
                 </div>
                 <div id="top_nav_stats" :style="`font-size: ${mq.lgPlus ? 14 : 12}px`">
@@ -28,10 +39,10 @@
                 </div>
                 <div id="large_date_picker" v-if="mq.lgPlus">
                     <n-date-picker type="daterange"
-                                   :value="pickerDates"
-                                   @update:value="applyDateRange"
-                                   :is-date-disabled="dateIsInvalid"
-                                   format="E. MMM do yyyy"/>
+                           :value="pickerDates"
+                           @update:value="applyDateRange"
+                           :is-date-disabled="dateIsInvalid"
+                           format="E. MMM do yyyy"/>
                 </div>
                 <div class="layer_toggles" v-if="mq.lgPlus">
                     <div>
@@ -133,9 +144,15 @@ import {
     NGi,
     NSwitch,
     NInputNumber,
+    NPopover,
 } from 'naive-ui'
 import mapboxgl from 'mapbox-gl'
-import { ArrowForwardFilled, FilterAltOutlined } from '@vicons/material'
+import {
+    ArrowForwardFilled,
+    FilterAltOutlined,
+    FilterAltTwotone,
+    ShareOutlined,
+} from '@vicons/material'
 import { Icon } from '@vicons/utils'
 
 
@@ -168,6 +185,7 @@ export default {
             showHelpModal: false,
             items: [],
             shootingsCount: 0,
+            hasAppliedFilters: false,
             showDrawer: false,
             injuryOnly: false,
             minCasings: 0,
@@ -251,6 +269,39 @@ export default {
         utcDates() {
             return _.map(this.pickerDates, x => moment(x).utc(true));
         },
+        hasAppliedFilters() {
+            return _.some([
+                this.injuryOnly,
+                this.minCasings,
+                this.hourSliderValue[0],
+                this.hourSliderValue[1] !== 24
+            ]);
+        },
+        deepLink() {
+            const url = new URL(document.location.origin);
+            const coords = window.$mapbox.getCenter();
+            const zoom = window.$mapbox.getZoom();
+            url.searchParams.set('lng', _.toString(_.round(coords.lng, 6)));
+            url.searchParams.set('lat', _.toString(_.round(coords.lat, 6)));
+            url.searchParams.set('zoom', _.toString(_.round(zoom, 3)));
+            url.searchParams.set('start_date', this.startFilterDate.format('YYYY-MM-DD'));
+            url.searchParams.set('end_date', this.endFilterDate.format('YYYY-MM-DD'));
+            if (!_.isEqual(this.hourSliderValue, [0, 24])) {
+                url.searchParams.set('start_hour', _.toString(this.hourSliderValue[0]));
+                url.searchParams.set('end_hour', _.toString(this.hourSliderValue[1]));
+            }
+            if (this.injuryOnly) {
+                url.searchParams.set('injury', 'true');
+            }
+            if (this.showBarrels) {
+                url.searchParams.set('barrels', 'true');
+            }
+            if (this.minCasings) {
+                url.searchParams.set('casings', _.toString(this.minCasings));
+            }
+            return url.toString();
+
+        },
     },
     methods: {
         setLayerVisibility(layerId, isVisible) {
@@ -332,10 +383,7 @@ export default {
         },
         applyDateRange(value) {
             this.pickerDates = value;
-            const [start, end]  = this.dateSliderValue;
-            if (start < this.pickerDates[0] || end > this.pickerDates[1]) {
-                this.dateSliderValue =  _.map(this.utcDates, x => x.unix() * 1000);
-            }
+            this.dateSliderValue =  _.map(this.utcDates, x => x.unix() * 1000);
         },
         dateIsInvalid(value) {
             const date = moment.utc(value);
@@ -385,7 +433,65 @@ export default {
             const features = _.sortBy(this.sourceData.features, 'properties.date');
             this.dataStartDate = _.head(features).properties.date;
             this.dataEndDate = _.last(features).properties.date;
-            this.applyDateRange([moment.utc(this.dataEndDate).subtract(1, 'year').unix() * 1000, this.dataEndDate]);
+
+            const url = new URL(document.location.href);
+            const params = new URLSearchParams(url.search);
+
+            let start = moment(this.dataEndDate).subtract(1, 'year').unix() * 1000;
+            if (params.has('start_date')) {
+                const paramStartDate = moment(params.get('start_date'), 'YYYY-MM-DD');
+                if (paramStartDate.isValid() && !this.dateIsInvalid(paramStartDate)) {
+                    start = paramStartDate.unix() * 1000;
+                }
+            }
+
+            let end = this.dataEndDate;
+            if (params.has('end_date')) {
+                const paramEndDate = moment(params.get('end_date'), 'YYYY-MM-DD');
+                if (paramEndDate.isValid() && !this.dateIsInvalid(paramEndDate)) {
+                    end = paramEndDate.unix() * 1000;
+                }
+            }
+
+            let startHour = 0;
+            if (params.has('start_hour')) {
+                const paramStartHour = parseInt(params.get('start_hour'));
+                if (paramStartHour >= 0 && paramStartHour <= 24) {
+                    startHour = paramStartHour;
+                }
+            }
+            let endHour = 24;
+            if (params.has('end_hour')) {
+                const paramEndHour = parseInt(params.get('end_hour'));
+                if (paramEndHour >= 0 && paramEndHour <= 24) {
+                    endHour = paramEndHour;
+                }
+            }
+            this.hourSliderValue = [startHour, endHour];
+
+            if (params.has('injury')) {
+                this.injuryOnly = true;
+            }
+
+            if (params.has('barrels')) {
+                this.showBarrels = true;
+            }
+
+            if (params.has('casings')) {
+                this.minCasings = parseInt(params.get('casings'));
+            }
+
+            if (params.has('lng') && params.has('lat')) {
+                window.$mapbox.flyTo({
+                    center: {
+                        lat: parseFloat(params.get('lat')),
+                        lng: parseFloat(params.get('lng')),
+                    },
+                    zoom: parseFloat(params.get('zoom')) ?? 14
+                })
+            }
+
+            this.applyDateRange([start, end]);
 
             await window.$mapbox.addSource('shootings-clustered', {
                 type: 'geojson',
@@ -498,7 +604,10 @@ export default {
     },
     created() {
         this.popupVueInstance = null;
-        this.sourceData = {};
+        this.sourceData = {
+            type: 'FeatureCollection',
+            features: [],
+        };
     },
     async unmounted() {
         await Promise.all(_.map(this.allLayers, layer => window.$mapbox.removeLayer(layer.id)));
@@ -508,6 +617,8 @@ export default {
         AboutLink,
         ArrowForwardFilled,
         FilterAltOutlined,
+        FilterAltTwotone,
+        ShareOutlined,
         HelpModal,
         Icon,
         NButton,
@@ -522,6 +633,7 @@ export default {
         NGi,
         NSwitch,
         NInputNumber,
+        NPopover,
         PlayerControls,
         SmallDatepicker,
     },
