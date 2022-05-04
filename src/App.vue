@@ -519,8 +519,8 @@ export default {
             url.searchParams.set('lng', _.toString(_.round(coords.lng, 6)));
             url.searchParams.set('lat', _.toString(_.round(coords.lat, 6)));
             url.searchParams.set('zoom', _.toString(_.round(zoom, 3)));
-            url.searchParams.set('start_date', this.startFilterDate.format('YYYY-MM-DD'));
-            url.searchParams.set('end_date', this.endFilterDate.format('YYYY-MM-DD'));
+            url.searchParams.set('start_date', this.startSliderDate.format('YYYY-MM-DD'));
+            url.searchParams.set('end_date', this.endSliderDate.format('YYYY-MM-DD'));
             if (!_.isEqual(this.hourSliderValue, [0, 24])) {
                 url.searchParams.set('start_hour', _.toString(this.hourSliderValue[0]));
                 url.searchParams.set('end_hour', _.toString(this.hourSliderValue[1]));
