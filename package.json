@@ -23,7 +23,6 @@
     "@vitejs/plugin-vue": "^2.3.1",
     "less": "^4.1.2",
     "vite": "^2.9.6",
-    "vite-plugin-sentry": "^1.0.14",
-    "vue-router": "^4.0.14"
+    "vite-plugin-sentry": "^1.0.14"
   }
 }
