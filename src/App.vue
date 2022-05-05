@@ -409,8 +409,8 @@ export default {
             this.sourceData = await (await fetch('/shootings.geojson')).json();
 
             const features = _.sortBy(this.sourceData.features, 'properties.date');
-            this.dataStartDate = moment.utc(_.head(features).properties.date).local(true);
-            this.dataEndDate = moment.utc(_.last(features).properties.date).local(true);
+            this.dataStartDate = moment.utc(_.head(features).properties.date).local(true).startOf('month');
+            this.dataEndDate = moment.utc(_.last(features).properties.date).local(true).endOf('month');
 
             const url = new URL(document.location.href);
             const params = new URLSearchParams(url.search);
