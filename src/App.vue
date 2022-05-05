@@ -56,13 +56,13 @@
             <div id="small_date_pickers" v-if="mq.mdMinus">
                 <small-datepicker
                         @update:value="setStartFilterDate"
-                        :value="startFilterDate.format('YYYY-MM-DD')"/>
+                        :value="startFilterDateDisplay"/>
                 <icon style="margin: 0 1em">
                     <arrow-forward-filled/>
                 </icon>
                 <small-datepicker
                         @update:value="setEndFilterDate"
-                        :value="endFilterDate.format('YYYY-MM-DD')"/>
+                        :value="endFilterDateDisplay"/>
             </div>
         </nav>
         <footer>
@@ -175,7 +175,7 @@ export default {
         const end = dataEndDate.unix() * 1000;
         return {
             mapLoaded: false,
-            dataStartDate: moment.utc({year: 2019}).unix() * 1000,
+            dataStartDate: moment({year: 2019}).unix() * 1000,
             dataEndDate:  dataEndDate.unix() * 1000,
             dateSliderValue: [start, end],
             hourSliderValue: [0, 24],
@@ -226,17 +226,23 @@ export default {
         allLayers() {
             return [...NON_FILTERABLE_LAYERS, ...FILTERABLE_LAYERS];
         },
-        startFilterDate() {
-            return this.utcDates[0];
+        startFilterDateUtc() {
+            return moment(this.pickerDates[0]).utc(true);
         },
         startFilterDateMs() {
-            return this.startFilterDate.unix() * 1000;
+            return this.startFilterDateUtc.unix() * 1000;
         },
-        endFilterDate() {
-            return this.utcDates[1];
+        startFilterDateDisplay() {
+            return moment(this.pickerDates[0]).format('YYYY-MM-DD');
+        },
+        endFilterDateUtc() {
+            return moment(this.pickerDates[1]).utc(true);
         },
         endFilterDateMs() {
-            return this.endFilterDate.unix() * 1000;
+            return this.endFilterDateUtc.unix() * 1000;
+        },
+        endFilterDateDisplay() {
+            return moment(this.pickerDates[1]).format('YYYY-MM-DD');
         },
         startSliderDate() {
             return moment.utc(this.dateSliderValue[0]);
@@ -265,9 +271,6 @@ export default {
         },
         isPlaying() {
             return !_.isNull(this.playInterval);
-        },
-        utcDates() {
-            return _.map(this.pickerDates, x => moment(x).utc(true));
         },
         hasAppliedFilters() {
             return _.some([
@@ -334,7 +337,7 @@ export default {
         },
         setEndSlider(duration) {
             const newSliderEndDate = moment.utc(this.dateSliderValue[0]).add(1, duration);
-            if (newSliderEndDate.isAfter(this.endFilterDate)) {
+            if (newSliderEndDate.isAfter(this.endFilterDateUtc)) {
                 this.dateSliderValue[1] = this.endFilterDateMs;
             } else {
                 this.dateSliderValue[1] = newSliderEndDate.unix() * 1000;
@@ -358,21 +361,21 @@ export default {
         },
         applyDateRange(value) {
             this.pickerDates = value;
-            this.dateSliderValue =  _.map(this.utcDates, x => x.unix() * 1000);
+            this.dateSliderValue =  _.map(value, x => moment(x).utc(true).unix() * 1000);
         },
         dateIsInvalid(value) {
             const date = moment.utc(value);
             return date.isAfter(this.dataEndDate) || date.isBefore(this.dataStartDate);
         },
         incrementYear() {
-            const nextYear = this.endFilterDate.clone().add(1, 'year');
+            const nextYear = this.endFilterDateUtc.clone().add(1, 'year');
             if (nextYear.isBefore(this.dataEndDate)) {
                 const value = _.map(this.pickerDates, x => moment.utc(x).add(1, 'year').unix() * 1000)
                 this.applyDateRange(value);
             }
         },
         decrementYear() {
-            const prevYear = this.startFilterDate.clone().subtract(1, 'year');
+            const prevYear = this.startFilterDateUtc.clone().subtract(1, 'year');
             if (prevYear.isAfter(this.dataStartDate)) {
                 const value = _.map(this.pickerDates, x => moment.utc(x).subtract(1, 'year').unix() * 1000)
                 this.applyDateRange(value);
@@ -406,8 +409,8 @@ export default {
             this.sourceData = await (await fetch('/shootings.geojson')).json();
 
             const features = _.sortBy(this.sourceData.features, 'properties.date');
-            this.dataStartDate = _.head(features).properties.date;
-            this.dataEndDate = _.last(features).properties.date;
+            this.dataStartDate = moment.utc(_.head(features).properties.date).local(true);
+            this.dataEndDate = moment.utc(_.last(features).properties.date).local(true);
 
             const url = new URL(document.location.href);
             const params = new URLSearchParams(url.search);
@@ -420,7 +423,7 @@ export default {
                 }
             }
 
-            let end = this.dataEndDate;
+            let end = this.dataEndDate.local(true).unix() * 1000;
             if (params.has('end_date')) {
                 const paramEndDate = moment(params.get('end_date'), 'YYYY-MM-DD');
                 if (paramEndDate.isValid() && !this.dateIsInvalid(paramEndDate)) {
