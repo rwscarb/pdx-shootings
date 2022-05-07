@@ -126,7 +126,7 @@
                 </n-drawer-content>
             </n-drawer>
         </footer>
-        <help-modal :show-help-modal="showHelpModal"/>
+        <help-modal :show-help-modal="showHelpModal" @show="showHelpModal = $event"/>
     </n-config-provider>
 </template>
 
