@@ -1,5 +1,5 @@
 <template>
-    <n-button @click="showInfoModal = true">
+    <n-button @click="showInfoModal = !showInfoModal">
         <n-modal v-model:show="showInfoModal" :auto-focus="false">
             <n-card style="max-width: 20em; text-align: center" size="huge">
                 <template #header>

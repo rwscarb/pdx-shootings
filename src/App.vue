@@ -11,6 +11,11 @@
         <nav>
             <div id="header">
                 <div id="nav_extra_icons">
+                    <n-button @click="showHelpModal = !showHelpModal">
+                        <icon size="18">
+                            <help-outline-outlined/>
+                        </icon>
+                    </n-button>
                     <n-button @click="showDrawer = !showDrawer">
                         <icon size="18" :color="hasAppliedFilters ? 'rgb(42, 148, 125)' : undefined">
                             <filter-alt-twotone v-if="hasAppliedFilters"/>
@@ -152,6 +157,7 @@ import {
     FilterAltOutlined,
     FilterAltTwotone,
     ShareOutlined,
+    HelpOutlineOutlined,
 } from '@vicons/material'
 import { Icon } from '@vicons/utils'
 
@@ -625,6 +631,7 @@ export default {
         FilterAltOutlined,
         FilterAltTwotone,
         ShareOutlined,
+        HelpOutlineOutlined,
         HelpModal,
         Icon,
         NButton,

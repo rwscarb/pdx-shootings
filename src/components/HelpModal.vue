@@ -10,7 +10,8 @@
                         </icon>
                     </div>
                 </template>
-                <h3>Keyboard Shortcuts</h3>
+                <h3>Keyboard Shortcuts (Beta)</h3>
+                <h5>Click map before attempting shortcuts</h5>
                 <n-table>
                     <thead>
                     <tr>
@@ -25,10 +26,14 @@
                     </tr>
                     </tbody>
                 </n-table>
+                <template #footer>
+                    <a id="support_link" href="mailto:support@pdx-shootings.com">support@pdx-shootings.com</a>
+                </template>
             </n-card>
         </n-modal>
     </div>
 </template>
+
 <script>
 import { NCard, NModal, NTable, NTag } from 'naive-ui'
 import { HelpOutlineRound } from '@vicons/material'
@@ -63,5 +68,11 @@ export default {
     }
 }
 </script>
+
 <style lang="less">
+#support_link {
+  color: white;
+  display: block;
+  text-align: center;
+}
 </style>
