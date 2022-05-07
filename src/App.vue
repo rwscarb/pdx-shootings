@@ -233,7 +233,7 @@ export default {
             return [...NON_FILTERABLE_LAYERS, ...FILTERABLE_LAYERS];
         },
         startFilterDateUtc() {
-            return moment(this.pickerDates[0]).utc(true);
+            return this.pickerDates ? moment(this.pickerDates[0]).utc(true) : moment.utc();
         },
         startFilterDateMs() {
             return this.startFilterDateUtc.unix() * 1000;
@@ -242,7 +242,7 @@ export default {
             return moment(this.pickerDates[0]).format('YYYY-MM-DD');
         },
         endFilterDateUtc() {
-            return moment(this.pickerDates[1]).utc(true);
+            return this.pickerDates ? moment(this.pickerDates[1]).utc(true) : moment.utc();
         },
         endFilterDateMs() {
             return this.endFilterDateUtc.unix() * 1000;
