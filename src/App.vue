@@ -317,6 +317,15 @@ export default {
                 case 'd':
                     this.setEndSlider('day');
                     break;
+                case 'f':
+                    this.showDrawer = true;
+                    break;
+                case 'i':
+                    this.injuryOnly = !this.injuryOnly;
+                    break;
+                case 'b':
+                    this.showBarrels = !this.showBarrels;
+                    break;
                 case 'w':
                     this.setEndSlider('week');
                     break;
