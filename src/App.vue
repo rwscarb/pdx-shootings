@@ -57,7 +57,7 @@
                         Heatmap <n-switch v-model:value="showHeatMap"/>
                     </div>
                     <div>
-                        <n-switch v-model:value="showSatellite"/> Satellite
+                        Satellite <n-switch v-model:value="showSatellite"/>
                     </div>
                 </div>
             </div>
