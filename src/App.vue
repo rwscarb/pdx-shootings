@@ -56,6 +56,9 @@
                     <div>
                         Heatmap <n-switch v-model:value="showHeatMap"/>
                     </div>
+                    <div>
+                        <n-switch v-model:value="showSatellite"/> Satellite
+                    </div>
                 </div>
             </div>
             <div id="small_date_pickers" v-if="mq.mdMinus">
@@ -113,12 +116,15 @@
                                   :format-tooltip="formatHourSliderTooltip"
                                   :min="0"
                                   :max="24"/>
-                            <div v-if="mq.lgMinus" class="layer_toggles" style="flex-flow: column">
+                            <div v-if="mq.lgMinus" class="layer_toggles" style="justify-content: space-evenly">
                                 <div>
                                     <n-switch v-model:value="showClustered"/> Cluster
                                 </div>
                                 <div>
                                     <n-switch v-model:value="showHeatMap"/> Heatmap
+                                </div>
+                                <div>
+                                    <n-switch v-model:value="showSatellite"/> Satellite
                                 </div>
                             </div>
                         </n-gi>
@@ -195,6 +201,7 @@ export default {
             injuryOnly: false,
             minCasings: 0,
             showBarrels: false,
+            showSatellite: false,
             step: DAY_MS,
             playInterval: null,
             playIntervalSpeed: 400,
@@ -211,6 +218,21 @@ export default {
         },
         showBarrels(newVal) {
             this.setLayerVisibility('barrels', newVal);
+        },
+        showSatellite(newVal) {
+            const style = newVal ? 'mapbox://styles/mapbox/satellite-streets-v11' : 'mapbox://styles/mapbox/dark-v10';
+            window.$mapbox.setStyle(style);
+            window.$mapbox.once('styledata', async () => {
+                await this.addSources();
+                await this.addLayers();
+                const showClustered = this.showClustered;
+                this.setLayerVisibility('clusters', showClustered);
+                this.setLayerVisibility('cluster-count', showClustered);
+                this.setLayerVisibility('shootings-circles', !showClustered);
+                this.setLayerVisibility('shootings-circles-hover', !showClustered);
+                this.setLayerVisibility('shootings-heatmap', this.showHeatMap);
+                this.setLayerVisibility('barrels', this.showBarrels);
+            });
         },
         showClustered(newVal) {
             if (newVal && this.showHeatMap) {
@@ -489,7 +511,14 @@ export default {
             }
 
             this.applyDateRange([start, end]);
-
+            await this.addSources();
+            await this.addLayers();
+            this.mapLoaded = true;
+        },
+        async addLayers() {
+            await Promise.all(_.map(this.allLayers, layer => window.$mapbox.addLayer(layer)));
+        },
+        async addSources() {
             await window.$mapbox.addSource('shootings-clustered', {
                 type: 'geojson',
                 data: this.sourceData,
@@ -515,8 +544,6 @@ export default {
                     window.$mapbox.addImage('barrel', image);
                 },
             );
-            await Promise.all(_.map(this.allLayers, layer => window.$mapbox.addLayer(layer)));
-            this.mapLoaded = true;
         },
         formatDateSliderTooltip(value) {
             return moment.utc(value).format('MM/DD/YYYY');
