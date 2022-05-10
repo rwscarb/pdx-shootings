@@ -39,7 +39,15 @@ export const CIRCLE_LAYER = {
         visibility: 'none'
     },
     paint: {
-        'circle-radius': 3,
+        'circle-radius': [
+            'interpolate',
+            ['exponential', 0.5],
+            ['zoom'],
+            12,
+            3,
+            18,
+            5
+        ],
         'circle-color': ['case', ['get', 'injury'], '#D03050', '#1F70D3']
     }
 };
@@ -141,11 +149,13 @@ export const BARREL_LAYER = {
             12,
             0.05,
             13,
-            0.07,
+            0.08,
             15,
             0.1,
             16,
-            0.3,
+            0.2,
+            18,
+            0.3
         ]
     }
 };

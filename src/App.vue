@@ -212,7 +212,7 @@ export default {
             showDrawer: false,
             injuryOnly: false,
             minCasings: 0,
-            showBarrels: false,
+            showBarrels: params.has('barrels'),
             showSatellite: params.has('satellite'),
             step: DAY_MS,
             playInterval: null,
@@ -500,10 +500,6 @@ export default {
                 this.injuryOnly = true;
             }
 
-            if (this.params.has('barrels')) {
-                this.showBarrels = true;
-            }
-
             if (this.params.has('casings')) {
                 this.minCasings = parseInt(this.params.get('casings'));
             }
@@ -526,6 +522,10 @@ export default {
             if (this.params.has('heatmap')) {
                 this.showHeatMap = true;
                 this.setClusterLayerVisibility(false);
+            }
+
+            if (this.params.has('barrels')) {
+                this.setLayerVisibility('barrels', true);
             }
 
             this.mapLoaded = true;
