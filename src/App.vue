@@ -174,7 +174,14 @@ import HelpModal from './components/HelpModal.vue'
 import SmallDatepicker from './components/SmallDatepicker.vue'
 import PlayerControls from './components/PlayerControls.vue'
 
-import { DAY_MS, FILTERABLE_LAYERS, NON_FILTERABLE_LAYERS, SOURCES, } from './constants'
+import {
+    DARK_STYLE,
+    DAY_MS,
+    FILTERABLE_LAYERS,
+    NON_FILTERABLE_LAYERS,
+    SATELLITE_STYLE,
+    SOURCES,
+} from './constants'
 import barrelImgUrl from './assets/street-barrel.png'
 
 
@@ -185,8 +192,13 @@ export default {
         const dataEndDate = moment().startOf('day').startOf('month').subtract(1, 'day');
         const start = dataEndDate.clone().subtract(1, 'year').unix() * 1000;
         const end = dataEndDate.unix() * 1000;
+
+        const url = new URL(document.location.href);
+        const params = new URLSearchParams(url.search);
+
         return {
             mapLoaded: false,
+            params: params,
             dataStartDate: moment({year: 2019}).unix() * 1000,
             dataEndDate:  dataEndDate.unix() * 1000,
             dateSliderValue: [start, end],
@@ -201,7 +213,7 @@ export default {
             injuryOnly: false,
             minCasings: 0,
             showBarrels: false,
-            showSatellite: false,
+            showSatellite: params.has('satellite'),
             step: DAY_MS,
             playInterval: null,
             playIntervalSpeed: 400,
@@ -220,16 +232,12 @@ export default {
             this.setLayerVisibility('barrels', newVal);
         },
         showSatellite(newVal) {
-            const style = newVal ? 'mapbox://styles/mapbox/satellite-streets-v11' : 'mapbox://styles/mapbox/dark-v10';
+            const style = newVal ? SATELLITE_STYLE : DARK_STYLE;
             window.$mapbox.setStyle(style);
             window.$mapbox.once('styledata', async () => {
                 await this.addSources();
                 await this.addLayers();
-                const showClustered = this.showClustered;
-                this.setLayerVisibility('clusters', showClustered);
-                this.setLayerVisibility('cluster-count', showClustered);
-                this.setLayerVisibility('shootings-circles', !showClustered);
-                this.setLayerVisibility('shootings-circles-hover', !showClustered);
+                this.setClusterLayerVisibility(this.showClustered);
                 this.setLayerVisibility('shootings-heatmap', this.showHeatMap);
                 this.setLayerVisibility('barrels', this.showBarrels);
             });
@@ -238,10 +246,7 @@ export default {
             if (newVal && this.showHeatMap) {
                 this.showHeatMap = false;
             }
-            this.setLayerVisibility('clusters', newVal);
-            this.setLayerVisibility('cluster-count', newVal);
-            this.setLayerVisibility('shootings-circles', !newVal);
-            this.setLayerVisibility('shootings-circles-hover', !newVal);
+            this.setClusterLayerVisibility(newVal);
         },
         dateSliderValue(newVal) {
             const [start, end] = newVal;
@@ -312,6 +317,12 @@ export default {
     methods: {
         setLayerVisibility(layerId, isVisible) {
             window.$mapbox.setLayoutProperty(layerId, 'visibility', isVisible ? 'visible' : 'none');
+        },
+        setClusterLayerVisibility(isVisible) {
+            this.setLayerVisibility('clusters', isVisible);
+            this.setLayerVisibility('cluster-count', isVisible);
+            this.setLayerVisibility('shootings-circles', !isVisible);
+            this.setLayerVisibility('shootings-circles-hover', !isVisible);
         },
         incrementPlay() {
             this.setPlayInterval(this.playIntervalSpeed / 2);
@@ -453,97 +464,125 @@ export default {
                 .local(true)
                 .endOf('month').startOf('day');
 
-            const url = new URL(document.location.href);
-            const params = new URLSearchParams(url.search);
-
             let start = moment(this.dataEndDate).subtract(1, 'year').unix() * 1000;
-            if (params.has('start_date')) {
-                const paramStartDate = moment(params.get('start_date'), 'YYYY-MM-DD');
+            if (this.params.has('start_date')) {
+                const paramStartDate = moment(this.params.get('start_date'), 'YYYY-MM-DD');
                 if (paramStartDate.isValid() && !this.dateIsInvalid(paramStartDate)) {
                     start = paramStartDate.unix() * 1000;
                 }
             }
 
             let end = this.dataEndDate.local(true).unix() * 1000;
-            if (params.has('end_date')) {
-                const paramEndDate = moment(params.get('end_date'), 'YYYY-MM-DD');
+            if (this.params.has('end_date')) {
+                const paramEndDate = moment(this.params.get('end_date'), 'YYYY-MM-DD');
                 if (paramEndDate.isValid() && !this.dateIsInvalid(paramEndDate)) {
                     end = paramEndDate.unix() * 1000;
                 }
             }
 
             let startHour = 0;
-            if (params.has('start_hour')) {
-                const paramStartHour = parseInt(params.get('start_hour'));
+            if (this.params.has('start_hour')) {
+                const paramStartHour = parseInt(this.params.get('start_hour'));
                 if (paramStartHour >= 0 && paramStartHour <= 24) {
                     startHour = paramStartHour;
                 }
             }
             let endHour = 24;
-            if (params.has('end_hour')) {
-                const paramEndHour = parseInt(params.get('end_hour'));
+            if (this.params.has('end_hour')) {
+                const paramEndHour = parseInt(this.params.get('end_hour'));
                 if (paramEndHour >= 0 && paramEndHour <= 24) {
                     endHour = paramEndHour;
                 }
             }
             this.hourSliderValue = [startHour, endHour];
 
-            if (params.has('injury')) {
+            if (this.params.has('injury')) {
                 this.injuryOnly = true;
             }
 
-            if (params.has('barrels')) {
+            if (this.params.has('barrels')) {
                 this.showBarrels = true;
             }
 
-            if (params.has('casings')) {
-                this.minCasings = parseInt(params.get('casings'));
+            if (this.params.has('casings')) {
+                this.minCasings = parseInt(this.params.get('casings'));
             }
 
-            if (params.has('lng') && params.has('lat')) {
+            if (this.params.has('lng') && this.params.has('lat')) {
                 window.$mapbox.flyTo({
                     center: {
-                        lat: parseFloat(params.get('lat')),
-                        lng: parseFloat(params.get('lng')),
+                        lat: parseFloat(this.params.get('lat')),
+                        lng: parseFloat(this.params.get('lng')),
                     },
-                    zoom: parseFloat(params.get('zoom')) ?? 14
+                    zoom: parseFloat(this.params.get('zoom')) ?? 14
                 })
             }
 
             this.applyDateRange([start, end]);
+
             await this.addSources();
             await this.addLayers();
+
+            if (this.params.has('heatmap')) {
+                this.showHeatMap = true;
+                this.setClusterLayerVisibility(false);
+            }
+
             this.mapLoaded = true;
         },
-        async addLayers() {
-            await Promise.all(_.map(this.allLayers, layer => window.$mapbox.addLayer(layer)));
-        },
-        async addSources() {
-            await window.$mapbox.addSource('shootings-clustered', {
-                type: 'geojson',
-                data: this.sourceData,
-                cluster: true,
-            });
-            window.$mapbox.on('sourcedata', e => {
-                if (e.sourceId === 'shootings-clustered' && e.isSourceLoaded) {
-                    this.applyFilters();
+        addLayers() {
+            _.forEach(this.allLayers, layer => {
+                if (!window.$mapbox.getLayer(layer.id)) {
+                    window.$mapbox.addLayer(layer);
                 }
             });
-            await window.$mapbox.addSource('shootings', {
-                type: 'geojson',
-                data: this.sourceData,
+        },
+        removeLayers() {
+            _.forEach(this.allLayers, layer => {
+                if (window.$mapbox.getLayer(layer.id)) {
+                    window.$mapbox.removeLayer(layer.id);
+                }
             });
-            await window.$mapbox.addSource('barrels', {
-                'type': 'geojson',
-                'data': '/barrels.geojson',
+        },
+        removeSources() {
+            _.forEach(SOURCES, source => {
+                if (window.$mapbox.getSource(source.id)) {
+                    window.$mapbox.removeSource(source.id);
+                }
             });
-            window.$mapbox.loadImage(
-                barrelImgUrl,
-                (error, image) => {
-                    if (error) throw error;
-                    window.$mapbox.addImage('barrel', image);
-                },
-            );
+        },
+        async addSources() {
+            if (!window.$mapbox.getSource('shootings-clustered')) {
+                await window.$mapbox.addSource('shootings-clustered', {
+                    type: 'geojson',
+                    data: this.sourceData,
+                    cluster: true,
+                });
+                window.$mapbox.on('sourcedata', e => {
+                    if (e.sourceId === 'shootings-clustered' && e.isSourceLoaded) {
+                        this.applyFilters();
+                    }
+                });
+            }
+            if (!window.$mapbox.getSource('shootings')) {
+                await window.$mapbox.addSource('shootings', {
+                    type: 'geojson',
+                    data: this.sourceData,
+                });
+            }
+            if (!window.$mapbox.getSource('barrels')) {
+                await window.$mapbox.addSource('barrels', {
+                    'type': 'geojson',
+                    'data': '/barrels.geojson',
+                });
+                window.$mapbox.loadImage(
+                    barrelImgUrl,
+                    (error, image) => {
+                        if (error) throw error;
+                        window.$mapbox.addImage('barrel', image);
+                    },
+                );
+            }
         },
         formatDateSliderTooltip(value) {
             return moment.utc(value).format('MM/DD/YYYY');
@@ -583,6 +622,12 @@ export default {
             if (this.minCasings) {
                 url.searchParams.set('casings', _.toString(this.minCasings));
             }
+            if (this.showHeatMap) {
+                url.searchParams.set('heatmap', 'true');
+            }
+            if (this.showSatellite) {
+                url.searchParams.set('satellite', 'true');
+            }
             this.deepLink = url.toString();
         },
     },
@@ -591,7 +636,7 @@ export default {
 
         window.$mapbox = new mapboxgl.Map({
             container: 'map',
-            style: 'mapbox://styles/mapbox/dark-v10',
+            style: this.showSatellite ? SATELLITE_STYLE : DARK_STYLE,
             center: [-122.67598626624789, 45.51939452327494],
             zoom: 12,
         });
@@ -658,8 +703,8 @@ export default {
         };
     },
     async unmounted() {
-        await Promise.all(_.map(this.allLayers, layer => window.$mapbox.removeLayer(layer.id)));
-        await Promise.all(_.map(SOURCES, layer => window.$mapbox.removeSource(layer.id)));
+        this.removeLayers();
+        this.removeSources();
     },
     components: {
         AboutLink,
