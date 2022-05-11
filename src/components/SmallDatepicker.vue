@@ -32,5 +32,6 @@ export default {
 <style scoped>
 input[type="date"] {
     text-align: center;
+    min-width: 7.5em;
 }
 </style>
