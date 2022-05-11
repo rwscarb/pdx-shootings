@@ -542,6 +542,8 @@ export default {
                 this.setLayerVisibility('barrels', true);
             }
 
+            this.$mapbox.resize();
+
             this.mapLoaded = true;
         },
         addLayers() {
@@ -791,12 +793,8 @@ label[for="hour_slider_input"] {
   text-align: center;
 }
 
-#app {
+#app, #map {
   width: 100vw;
-  height: 100vh;
-}
-
-#map {
   height: 100vh;
 }
 
