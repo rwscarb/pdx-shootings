@@ -205,13 +205,13 @@ export default {
             hourSliderValue: [0, 24],
             pickerDates: [start, end],
             showHeatMap: false,
-            showClustered: true,
             showHelpModal: false,
             items: [],
             shootingsCount: 0,
             showDrawer: false,
             injuryOnly: false,
             minCasings: 0,
+            showClustered: !params.has('nocluster'),
             showBarrels: params.has('barrels'),
             showSatellite: params.has('satellite'),
             step: DAY_MS,
@@ -528,6 +528,11 @@ export default {
             await this.addSources();
             await this.addLayers();
 
+            if (this.params.has('nocluster')) {
+                this.showClustered = false;
+                this.setClusterLayerVisibility(false);
+            }
+
             if (this.params.has('heatmap')) {
                 this.showHeatMap = true;
                 this.setClusterLayerVisibility(false);
@@ -636,6 +641,9 @@ export default {
             }
             if (this.showSatellite) {
                 url.searchParams.set('satellite', 'true');
+            }
+            if (!this.showClustered) {
+                url.searchParams.set('nocluster', 'true');
             }
             this.deepLink = url.toString();
         },
