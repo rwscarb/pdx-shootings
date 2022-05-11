@@ -359,6 +359,15 @@ export default {
                 case 'b':
                     this.showBarrels = !this.showBarrels;
                     break;
+                case 'c':
+                    this.showClustered = !this.showClustered;
+                    break;
+                case 's':
+                    this.showSatellite = !this.showSatellite;
+                    break;
+                case 'h':
+                    this.showHeatMap = !this.showHeatMap;
+                    break;
                 case 'w':
                     this.setEndSlider('week');
                     break;
