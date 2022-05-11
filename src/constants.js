@@ -146,7 +146,15 @@ export const CLUSTER_POINT_LAYER_HOVER = {
         visibility: 'visible'
     },
     paint: {
-        'circle-radius': 10,
+        'circle-radius': [
+            'interpolate',
+            ['exponential', 0.5],
+            ['zoom'],
+            12,
+            10,
+            18,
+            15
+        ],
         'circle-opacity': 0
     }
 };
