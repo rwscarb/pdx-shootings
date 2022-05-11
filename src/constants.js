@@ -121,7 +121,15 @@ export const CLUSTER_POINT_LAYER = {
     source: 'shootings-clustered',
     filter: ['!', ['has', 'point_count']],
     paint: {
-        'circle-radius': 3,
+        'circle-radius': [
+            'interpolate',
+            ['exponential', 0.5],
+            ['zoom'],
+            12,
+            3,
+            18,
+            5
+        ],
         'circle-color': ['case', ['get', 'injury'], '#D03050', '#1F70D3']
     },
     layout: {
