@@ -542,7 +542,7 @@ export default {
                 this.setLayerVisibility('barrels', true);
             }
 
-            this.$mapbox.resize();
+            window.$mapbox.resize();
 
             this.mapLoaded = true;
         },
