@@ -794,7 +794,6 @@ label[for="hour_slider_input"] {
 #app, #map {
   width: 100vw;
   height: 100vh;
-  height: -webkit-fill-available;
 }
 
 #header {
