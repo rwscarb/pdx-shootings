@@ -60,7 +60,15 @@ export const CIRCLE_LAYER_HOVER = {
         visibility: 'none'
     },
     paint: {
-        'circle-radius': 10,
+        'circle-radius': [
+            'interpolate',
+            ['exponential', 0.5],
+            ['zoom'],
+            12,
+            10,
+            18,
+            15
+        ],
         'circle-opacity': 0
     }
 };
