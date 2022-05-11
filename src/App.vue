@@ -791,8 +791,12 @@ label[for="hour_slider_input"] {
   text-align: center;
 }
 
-#app, #map {
+#app {
   width: 100vw;
+  height: 100vh;
+}
+
+#map {
   height: 100vh;
 }
 
