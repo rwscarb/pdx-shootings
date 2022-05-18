@@ -463,7 +463,7 @@ export default {
             }, this.playIntervalSpeed);
         },
         async onMapLoaded() {
-            this.sourceData = await (await fetch('/shootings.geojson')).json();
+            this.sourceData = await (await fetch('/shootings.geojson', {cache: 'no-cache'})).json();
 
             const features = _.sortBy(this.sourceData.features, 'properties.date');
             this.dataStartDate = moment.utc(_.head(features).properties.date)
