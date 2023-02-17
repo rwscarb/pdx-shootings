@@ -1,6 +1,6 @@
 <template>
     <div id="help">
-        <n-modal v-model:show="showHelpModal" @update:show="e => $emit('show', e)" :auto-focus="false" preset="card" style="max-width: 50em">
+        <n-modal :show="showHelpModal" @update:show="e => $emit('show', e)" :auto-focus="false" preset="card" style="max-width: 50em">
             <n-card>
                 <template #header>
                     <div style="text-align: center">

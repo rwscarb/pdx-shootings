@@ -17,9 +17,11 @@ def main():
         dr = csv.DictReader(response.content.decode('utf-8').splitlines())
         features = []
         for row in dr:
+            if not all((row['Open Data Longitude'], row['Open Data Latitude'])):
+                continue
             coordinates = [float(row['Open Data Longitude']), float(row['Open Data Latitude'])]
             uid = row['Incident Number']
-            time = row['Occur 2hr Time'].replace(' ', '')
+            time = row.get('Occur 2hr Time', row.get('Occur 3hr Time')).replace(' ', '')
 
             start_hour = 0
             end_hour = 24
@@ -33,9 +35,9 @@ def main():
                 'time': time,
                 'start_hour': start_hour,
                 'end_hour': end_hour,
-                'injury': row['Person Injury'].strip().lower() == 'true',
+                'injury': row['Shooting Type'] != 'No Injury',
                 'precinct': row['Precinct'],
-                'casings': int(row['CasingsRecovered']),
+                'casings': int(row['Casings Recovered']),
                 'location': coordinates,
             }
             if any(coordinates):
