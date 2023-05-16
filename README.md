@@ -27,9 +27,3 @@ $ ./scripts/fetch-barrels.py
 ```sh
 $ npm run dev
 ```
-
-### Deploy (make sure to fetch first)
-
-```sh
-$ ./scripts/deploy.sh
-```
